@@ -38,7 +38,7 @@ function dfs_xy_conv(code, v1, v2) {
   var rs = {};
   if (code == "toXY") {
     rs['lat'] = v1;
-    rs['lng'] = v2;
+    rs['lon'] = v2;
     var ra = Math.tan(Math.PI * 0.25 + (v1) * DEGRAD * 0.5);
     ra = re * sf / Math.pow(ra, sn);
     var theta = v2 * DEGRAD - olon;
@@ -70,11 +70,14 @@ function dfs_xy_conv(code, v1, v2) {
     }
     var alon = theta / sn + olon;
     rs['lat'] = alat * RADDEG;
-    rs['lng'] = alon * RADDEG;
+    rs['lon'] = alon * RADDEG;
   }
   return rs;
 }
 
+module.exports = {
+  dfs_xy_conv: dfs_xy_conv
+};
 
 // var rs = dfs_xy_conv("toLL", "60", "127");
 // console.log(rs.lat, rs.lng);
