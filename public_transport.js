@@ -1,9 +1,7 @@
 const convert = require('./convert_XY.js');
 const fetch = require('node-fetch');
 
-const serviceKey = 'e8wHh2tya84M88aReEpXCa5XTQf3xgo01aZG39k5';
-
-async function fetchDataTransport(startX, startY, endX, endY, searchDttm) {
+async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
     const options = {
         method: 'POST',
         headers: {
@@ -120,11 +118,6 @@ async function fetchDataTransport(startX, startY, endX, endY, searchDttm) {
 
                 Routes.push(Route);
             }
-
-            Routes.forEach(route => {
-                console.log(route);
-            });
-
             return Routes;
         } else {
             console.error('No itinerary found.');
@@ -134,5 +127,10 @@ async function fetchDataTransport(startX, startY, endX, endY, searchDttm) {
     }
 }
 
-// startX, startY, endX, endY, searchDttm입력
-fetchDataTransport(126.9961, 37.5035, 126.96, 37.4946, 202307261200);
+getPublicTransport(126.9961, 37.5035, 126.96, 37.4946, 202307261200)
+    .then(Routes => {
+        console.log(Routes);
+    })
+    .catch(error => {
+        console.error(error);
+    });
