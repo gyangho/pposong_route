@@ -88,10 +88,14 @@ async function get_Ultra_Nowcast_Data(input_date, input_time, input_x, input_y) 
             const category = item.category;
             const fcstValue = item.fcstValue;
 
-            // cur_time과 item.fcstTime이 같고, item.category가 'T1H', 'SKY', 'REH', 'PTY', 'WSD'인 경우에만 저장
-            if (cur_time === Number(fcstTime) && ['T1H', 'RN1', 'SKY', 'REH', 'PTY', 'WSD'].includes(category)) {
-                if (category == 'RN1' && fcstValue === '강수없음')
-                    ultra_nowcast_datas[category] = '0';
+            // cur_time과 item.fcstTime이 같고, item.category가 'T1H', 'REH', 'WSD'인 경우에만 저장
+            if (cur_time === Number(fcstTime) && ['T1H', 'RN1', 'REH', 'WSD'].includes(category)) {
+                if (category == 'RN1') {
+                    if (fcstValue === '강수없음')
+                        ultra_nowcast_datas[category] = '0';
+                    else
+                        ultra_nowcast_datas[category] = parseFloat(fcstValue).toString();
+                }
                 else
                     ultra_nowcast_datas[category] = fcstValue;
             }
@@ -100,11 +104,12 @@ async function get_Ultra_Nowcast_Data(input_date, input_time, input_x, input_y) 
     }
 }
 
-const input_date = '20230725'
-const input_time = '1354';
-const input_x = '59';
-const input_y = '125';
-
+const input_date = '20230726'
+const input_time = '2050';
+// const input_x = '59';
+// const input_y = '125';
+const input_x = '64';
+const input_y = '127';
 
 get_Ultra_Nowcast_Data(input_date, input_time, input_x, input_y)
     .then(ultra_nowcast_data => {

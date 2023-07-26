@@ -96,11 +96,15 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
             if (!ultra_forecast_datas[cur_base_time])
                 ultra_forecast_datas[cur_base_time] = {};       // 예보시간에 따른 날씨데이터 객체 생성
 
-            // 기온(T1H), 1시간 강수량(RN1), 하늘 상태(SKY), 습도(REH), 강수형태(PTY), 풍속(WSD)
+            // 기온(T1H), 1시간 강수량(RN1), 습도(REH), 풍속(WSD)
             if (item.category === "T1H" || item.category === "RN1" ||
                 item.category === "REH" || item.category === "WSD") {
-                if (item.category === "RN1" && item.obsrValue === '강수없음')   // 강수없음 --> 0
-                    ultra_forecast_datas[cur_base_time][item.category] = '0';
+                if (item.category === "RN1") {
+                    if (item.obsrValue === '강수없음')   // 강수없음 --> 0
+                        ultra_forecast_datas[cur_base_time][item.category] = '0';
+                    else
+                        ultra_forecast_datas[cur_base_time][item.category] = parseFloat(obsrValue).toString();
+                }
                 else
                     ultra_forecast_datas[cur_base_time][item.category] = item.obsrValue;
             }
@@ -121,14 +125,19 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
             if (!ultra_forecast_datas[fcstTime])
                 ultra_forecast_datas[fcstTime] = {};       // 예보시간에 따른 날씨데이터 객체 생성
 
-            // 기온(T1H), 1시간 강수량(RN1), 하늘 상태(SKY), 습도(REH), 강수형태(PTY), 풍속(WSD)
-            if (item.category === "T1H" || item.category === "RN1" || item.category === "SKY" ||
-                item.category === "REH" || item.category === "PTY" || item.category === "WSD"
+            // 기온(T1H), 1시간 강수량(RN1), 습도(REH), 풍속(WSD)
+            if (item.category === "T1H" || item.category === "RN1" ||
+                item.category === "REH" || item.category === "WSD"
             ) {
+
+                if (item.category === "RN1") {
+                    if (item.fcstValue === '강수없음')
+                        ultra_forecast_datas[fcstTime][item.category] = '0';
+                    else
+                        ultra_forecast_datas[fcstTime][item.category] = parseFloat(fcstValue).toString();
+                }
                 ultra_forecast_datas[fcstTime][item.category] = item.fcstValue;
 
-                if (item.category === "RN1" && item.fcstValue === '강수없음')
-                    ultra_forecast_datas[fcstTime][item.category] = '0';
             }
             check++;
         });
@@ -141,11 +150,12 @@ module.exports = {
 };
 
 // 사용 예시
-const input_date = '20230725'
-const input_time = '1454';
+const input_date = '20230726'
+const input_time = '1337';
 const input_x = '59';
 const input_y = '125';
-
+// const input_x = '64';
+// const input_y = '127';
 
 get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
     .then(ultra_forecast_datas => {
