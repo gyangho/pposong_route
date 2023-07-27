@@ -40,9 +40,9 @@ async function get_Ultra_Nowcast_Data(input_date, input_time, input_x, input_y) 
 
         const ultra_nowcast_datas = await fetch_ultra_nowcast_data(queryParams);
         const ultra_nowcast_data = {
-            "REH": ultra_nowcast_datas[1].obsrValue,
-            "RN1": ultra_nowcast_datas[2].obsrValue,
+            "RN1": parseFloat(ultra_nowcast_datas[2].obsrValue),
             "T1H": ultra_nowcast_datas[3].obsrValue,
+            "REH": ultra_nowcast_datas[1].obsrValue,
             "WSD": ultra_nowcast_datas[7].obsrValue
         };
 
@@ -92,9 +92,9 @@ async function get_Ultra_Nowcast_Data(input_date, input_time, input_x, input_y) 
             if (cur_time === Number(fcstTime) && ['T1H', 'RN1', 'REH', 'WSD'].includes(category)) {
                 if (category == 'RN1') {
                     if (fcstValue === '강수없음')
-                        ultra_nowcast_datas[category] = '0';
+                        ultra_nowcast_datas[category] = 0;
                     else
-                        ultra_nowcast_datas[category] = parseFloat(fcstValue).toString();
+                        ultra_nowcast_datas[category] = parseFloat(fcstValue);
                 }
                 else
                     ultra_nowcast_datas[category] = fcstValue;
