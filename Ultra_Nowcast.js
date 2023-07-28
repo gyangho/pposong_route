@@ -116,11 +116,11 @@ async function get_Ultra_Nowcast_Data(input_date, input_time, input_x, input_y) 
 
 
 const input_date = '20230728'
-const input_time = '1522';
+const input_time = '2156';
 // const input_x = '59';
 // const input_y = '125';
-const input_x = '64';
-const input_y = '127';
+const input_x = 64;
+const input_y = 127;
 
 get_Ultra_Nowcast_Data(input_date, input_time, input_x, input_y)
     .then(ultra_nowcast_data => {

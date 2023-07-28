@@ -21,7 +21,6 @@ function fetch_ultra_nowcast_data(prevQueryParams) {    // 초단기실황
         .then(data => data.response.body.items.item)
         .catch(error => console.error(error));
 }
-const ultra_forecast_datas = {};
 
 async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y) {
     let {
@@ -50,7 +49,6 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
         const items = await fetch_ultra_forecast_data(queryParams);
         const ultra_forecast_datas = [];
         let next_time = cur_time;
-        let next_time_str = next_time.toString().padStart(4, '0');
         let check = 0;
 
         for (const item of items) {
@@ -58,7 +56,7 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
             const category = item.category;
             const fcstValue = item.fcstValue;
 
-            if (next_time_str === fcstTime && ['T1H', 'RN1', 'REH', 'WSD'].includes(category)) {
+            if (next_time === Number(fcstTime) && ['T1H', 'RN1', 'REH', 'WSD'].includes(category)) {
                 // 이미 존재하는 객체인지 확인
                 const existingData = ultra_forecast_datas.find(data => data.Time === fcstTime);
 
@@ -92,7 +90,6 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                         next_time = 0;
                         prev_base_date = calculate.get_next_basedate(prev_base_date);
                     }
-                    next_time_str = next_time.toString().padStart(4, '0');
                     check = 0;
                 }
                 else {
@@ -101,7 +98,6 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                         next_time = 0;
                         prev_base_date = calculate.get_next_basedate(prev_base_date);
                     }
-                    next_time_str = next_time.toString().padStart(4, '0');
                 }
             } else {
                 next_time = cur_time;
@@ -109,7 +105,6 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                     next_time = 0;
                     prev_base_date = calculate.get_next_basedate(prev_base_date);
                 }
-                next_time_str = next_time.toString().padStart(4, '0');
                 check = 0;
             }
         }
@@ -167,7 +162,6 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
         const ultra_forecast_data = await fetch_ultra_forecast_data(queryParams);
         const items2 = ultra_forecast_data;
 
-        next_time_str = next_time.toString().padStart(4, '0');
         cur_time = next_time;
         let check = 0;
 
@@ -176,7 +170,7 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
             const category = item.category;
             const fcstValue = item.fcstValue;
 
-            if (next_time_str === fcstTime && ['T1H', 'RN1', 'REH', 'WSD'].includes(category)) {
+            if (next_time === Number(fcstTime) && ['T1H', 'RN1', 'REH', 'WSD'].includes(category)) {
                 // 이미 존재하는 객체인지 확인
                 const existingData = ultra_forecast_datas.find(data => data.Time === fcstTime);
 
@@ -210,7 +204,6 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                         next_time = 0;
                         prev_base_date = calculate.get_next_basedate(prev_base_date);
                     }
-                    next_time_str = next_time.toString().padStart(4, '0');
                     check = 0;
                 }
                 else {
@@ -219,7 +212,6 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                         next_time = 0;
                         prev_base_date = calculate.get_next_basedate(prev_base_date);
                     }
-                    next_time_str = next_time.toString().padStart(4, '0');
                 }
             } else {
                 next_time = cur_time;
@@ -227,7 +219,6 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                     next_time = 0;
                     prev_base_date = calculate.get_next_basedate(prev_base_date);
                 }
-                next_time_str = next_time.toString().padStart(4, '0');
                 check = 0;
             }
         }
@@ -241,9 +232,9 @@ module.exports = {
 
 // 사용 예시
 const input_date = '20230728'
-const input_time = '1150';
-const input_x = '59';
-const input_y = '125';
+const input_time = '2150';
+const input_x = 59;
+const input_y = 125;
 // const input_x = '64';
 // const input_y = '127';
 
@@ -254,3 +245,5 @@ get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
     .catch(error => {
         console.error(error);
     });
+
+
