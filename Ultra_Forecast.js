@@ -49,7 +49,7 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
         const items = await fetch_ultra_forecast_data(queryParams);
         const ultra_forecast_datas = [];
         let next_time = cur_time;
-        let check = 0;
+        let check = 0, check2 = 0;
 
         for (const item of items) {
             const fcstTime = item.fcstTime;
@@ -71,6 +71,10 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                         existingData[category] = fcstValue;
                     }
                 } else {
+                    if (check2 === 0 && fcstTime === '0000')    // 첫 fcstTime이 0시일때 base_date+1
+                        prev_base_date = calculate.get_next_basedate(prev_base_date);
+                    check2++;
+
                     // 새로운 객체를 생성하고 배열에 추가
                     const data = { Date: prev_base_date, Time: fcstTime, X: input_x, Y: input_y };
                     if (category === 'RN1') {
@@ -231,8 +235,8 @@ module.exports = {
 };
 
 // 사용 예시
-const input_date = '20230728'
-const input_time = '2150';
+const input_date = '20230729'
+const input_time = '0015';
 const input_x = 59;
 const input_y = 125;
 // const input_x = '64';
@@ -245,5 +249,3 @@ get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
     .catch(error => {
         console.error(error);
     });
-
-
