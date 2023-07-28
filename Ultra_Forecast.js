@@ -24,19 +24,21 @@ function fetch_ultra_nowcast_data(prevQueryParams) {    // 초단기실황
 const ultra_forecast_datas = {};
 
 async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y) {
-    const {
+    let {
+        cur_time,
         cur_base_time,  //  input_time과 가장 가까운 base_time
-        cur_base_date,  //  input_date
+        prev_base_date
     } = calculate.get_basetime_basedate(input_date, input_time, 60, 100);
     // 초단기예측 API제공시간 : 1시간 주기로 매 40분 --> time_to_add를 60, time_to_divide를 100으로 한다.
+    const cur_base_time_str = cur_base_time.toString().padStart(4, '0');
 
     const queryParams = new URLSearchParams({
         serviceKey,
         pageNo: '1',
         numOfRows: '1000',
         dataType: 'JSON',
-        base_date: cur_base_date,
-        base_time: cur_base_time,
+        base_date: prev_base_date,
+        base_time: cur_base_time_str,
         nx: input_x,
         ny: input_y
     });
@@ -46,27 +48,72 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
     // 1200 ~ 1244 --> 초단기예측(base_time : 1100) --> 12, 13, 14, 15, 16, 17
     if (input_time % 100 < 45) {    // (1, 3)
         const items = await fetch_ultra_forecast_data(queryParams);
+        const ultra_forecast_datas = [];
+        let next_time = cur_time;
+        let next_time_str = next_time.toString().padStart(4, '0');
+        let check = 0;
 
-        items.forEach(item => {
+        for (const item of items) {
             const fcstTime = item.fcstTime;
-            if (!ultra_forecast_datas[fcstTime])
-                ultra_forecast_datas[fcstTime] = {};     // 예보시간에 따른 날씨데이터 객체 생성
+            const category = item.category;
+            const fcstValue = item.fcstValue;
 
-            // 기온(T1H), 1시간 강수량(RN1), 하늘 상태(SKY), 습도(REH), 강수형태(PTY), 풍속(WSD)
-            if (item.category === "T1H" || item.category === "RN1" ||
-                item.category === "REH" || item.category === "WSD"
-            ) {
-                if (item.category === "RN1") {
-                    if (item.fcstValue === '강수없음')  // 강수없음 --> 0
-                        ultra_forecast_datas[fcstTime][item.category] = 0;
-                    else
-                        ultra_forecast_datas[fcstTime][item.category] = parseFloat(item.fcstValue);
+            if (next_time_str === fcstTime && ['T1H', 'RN1', 'REH', 'WSD'].includes(category)) {
+                // 이미 존재하는 객체인지 확인
+                const existingData = ultra_forecast_datas.find(data => data.Time === fcstTime);
+
+                if (existingData) {
+                    // 이미 존재하는 객체라면 해당 프로퍼티를 추가
+                    if (category === 'RN1') {
+                        if (fcstValue === '강수없음')
+                            existingData[category] = 0;
+                        else
+                            existingData[category] = fcstValue;
+                    } else {
+                        existingData[category] = fcstValue;
+                    }
+                } else {
+                    // 새로운 객체를 생성하고 배열에 추가
+                    const data = { Date: prev_base_date, Time: fcstTime, X: input_x, Y: input_y };
+                    if (category === 'RN1') {
+                        if (fcstValue === '강수없음')
+                            data[category] = 0;
+                        else
+                            data[category] = fcstValue;
+                    } else {
+                        data[category] = fcstValue;
+                    }
+                    ultra_forecast_datas.push(data);
                 }
-                else
-                    ultra_forecast_datas[fcstTime][item.category] = item.fcstValue;
+                check++;
+                if (check == 6) {
+                    next_time = cur_time;
+                    if (next_time == 2400) {
+                        next_time = 0;
+                        prev_base_date = calculate.get_next_basedate(prev_base_date);
+                    }
+                    next_time_str = next_time.toString().padStart(4, '0');
+                    check = 0;
+                }
+                else {
+                    next_time += 100; // 100 분을 더해서 다음 시간으로 이동
+                    if (next_time == 2400) {
+                        next_time = 0;
+                        prev_base_date = calculate.get_next_basedate(prev_base_date);
+                    }
+                    next_time_str = next_time.toString().padStart(4, '0');
+                }
+            } else {
+                next_time = cur_time;
+                if (next_time == 2400) {
+                    next_time = 0;
+                    prev_base_date = calculate.get_next_basedate(prev_base_date);
+                }
+                next_time_str = next_time.toString().padStart(4, '0');
+                check = 0;
             }
-
-        });
+        }
+        return ultra_forecast_datas;
     }
 
     // 초단기실황 결과 1개 + 초단기예측 결과 5개
@@ -75,11 +122,13 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
     // 1245 ~ 1259 --> 초단기실황(base_time : 1200) --> 12
     //                 + 초단기예측(base_time : 1200) --> 13, 14, 15, 16, 16
     else {
-        const {
+        let {
             cur_base_time,  //  input_time과 가장 가까운 base_time
             cur_base_date,  //  input_date
+            prev_base_date
         } = calculate.get_basetime_basedate(input_date, input_time, 55, 100);
         // 초단기실황 API제공시간 : 1시간 주기로 매 45분 --> time_to_add를 55, time_to_divide를 100으로 한다.
+        const cur_base_time_str = cur_base_time.toString().padStart(4, '0');
 
         const prevQueryParams = new URLSearchParams({
             serviceKey,
@@ -87,7 +136,7 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
             numOfRows: '1000',
             dataType: 'JSON',
             base_date: cur_base_date,
-            base_time: cur_base_time,
+            base_time: cur_base_time_str,
             nx: input_x,
             ny: input_y
         });
@@ -95,58 +144,95 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
         //초단기실황 1개
         const ultra_nowcast_data = await fetch_ultra_nowcast_data(prevQueryParams);
         const items = ultra_nowcast_data;
-
+        const ultra_forecast_datas = [];
+        let t1h, rn1, reh, wsd;
         items.forEach(item => {
-            if (!ultra_forecast_datas[cur_base_time])
-                ultra_forecast_datas[cur_base_time] = {};       // 예보시간에 따른 날씨데이터 객체 생성
-
             // 기온(T1H), 1시간 강수량(RN1), 습도(REH), 풍속(WSD)
-            if (item.category === "T1H" || item.category === "RN1" ||
-                item.category === "REH" || item.category === "WSD") {
-                if (item.category === "RN1") {
-                    if (item.obsrValue === '강수없음')   // 강수없음 --> 0
-                        ultra_forecast_datas[cur_base_time][item.category] = 0;
-                    else
-                        ultra_forecast_datas[cur_base_time][item.category] = parseFloat(item.obsrValue);
-                }
+            if (item.category === "RN1") {
+                if (item.obsrValue === '강수없음')   // 강수없음 --> 0
+                    rn1 = 0;
                 else
-                    ultra_forecast_datas[cur_base_time][item.category] = item.obsrValue;
+                    rn1 = parseFloat(item.obsrValue);
             }
+            else if (item.category === "T1H")
+                t1h = item.obsrValue;
+            else if (item.category === "REH")
+                reh = item.obsrValue;
+            else if (item.category === "WSD")
+                wsd = item.obsrValue;
         });
+        ultra_forecast_datas.push({ Date: parseInt(cur_base_date), Time: cur_base_time_str, X: input_x, Y: input_y, RN1: rn1, T1H: t1h, REH: reh, WSD: wsd });
 
         // 초단기예보 5개
         const ultra_forecast_data = await fetch_ultra_forecast_data(queryParams);
         const items2 = ultra_forecast_data;
 
+        next_time_str = next_time.toString().padStart(4, '0');
+        cur_time = next_time;
         let check = 0;
-        items2.forEach(item => {
+
+        for (const item of items2) {
             const fcstTime = item.fcstTime;
-            if ((check + 1) % 6 === 0) {    // 6번째 시각 필요없음
-                check++;
-                return;
-            }
+            const category = item.category;
+            const fcstValue = item.fcstValue;
 
-            if (!ultra_forecast_datas[fcstTime])
-                ultra_forecast_datas[fcstTime] = {};       // 예보시간에 따른 날씨데이터 객체 생성
+            if (next_time_str === fcstTime && ['T1H', 'RN1', 'REH', 'WSD'].includes(category)) {
+                // 이미 존재하는 객체인지 확인
+                const existingData = ultra_forecast_datas.find(data => data.Time === fcstTime);
 
-            // 기온(T1H), 1시간 강수량(RN1), 습도(REH), 풍속(WSD)
-            if (item.category === "T1H" || item.category === "RN1" ||
-                item.category === "REH" || item.category === "WSD"
-            ) {
-
-                if (item.category === "RN1") {
-                    if (item.fcstValue === '강수없음')
-                        ultra_forecast_datas[fcstTime][item.category] = 0;
-                    else
-                        ultra_forecast_datas[fcstTime][item.category] = parseFloat(item.fcstValue);
+                if (existingData) {
+                    // 이미 존재하는 객체라면 해당 프로퍼티를 추가
+                    if (category === 'RN1') {
+                        if (fcstValue === '강수없음')
+                            existingData[category] = 0;
+                        else
+                            existingData[category] = fcstValue;
+                    } else {
+                        existingData[category] = fcstValue;
+                    }
+                } else {
+                    // 새로운 객체를 생성하고 배열에 추가
+                    const data = { Date: prev_base_date, Time: fcstTime, X: input_x, Y: input_y };
+                    if (category === 'RN1') {
+                        if (fcstValue === '강수없음')
+                            data[category] = 0;
+                        else
+                            data[category] = fcstValue;
+                    } else {
+                        data[category] = fcstValue;
+                    }
+                    ultra_forecast_datas.push(data);
                 }
-                ultra_forecast_datas[fcstTime][item.category] = item.fcstValue;
-
+                check++;
+                if (check == 6) {
+                    next_time = cur_time;
+                    if (next_time == 2400) {
+                        next_time = 0;
+                        prev_base_date = calculate.get_next_basedate(prev_base_date);
+                    }
+                    next_time_str = next_time.toString().padStart(4, '0');
+                    check = 0;
+                }
+                else {
+                    next_time += 100; // 100 분을 더해서 다음 시간으로 이동
+                    if (next_time == 2400) {
+                        next_time = 0;
+                        prev_base_date = calculate.get_next_basedate(prev_base_date);
+                    }
+                    next_time_str = next_time.toString().padStart(4, '0');
+                }
+            } else {
+                next_time = cur_time;
+                if (next_time == 2400) {
+                    next_time = 0;
+                    prev_base_date = calculate.get_next_basedate(prev_base_date);
+                }
+                next_time_str = next_time.toString().padStart(4, '0');
+                check = 0;
             }
-            check++;
-        });
+        }
+        return ultra_forecast_datas;
     }
-    return ultra_forecast_datas;
 }
 
 module.exports = {
@@ -154,8 +240,8 @@ module.exports = {
 };
 
 // 사용 예시
-const input_date = '20230726'
-const input_time = '1337';
+const input_date = '20230728'
+const input_time = '1150';
 const input_x = '59';
 const input_y = '125';
 // const input_x = '64';

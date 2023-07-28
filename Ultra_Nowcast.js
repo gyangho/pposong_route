@@ -26,6 +26,7 @@ async function get_Ultra_Nowcast_Data(input_date, input_time, input_x, input_y) 
             cur_base_date,  //  input_date
         } = calculate.get_basetime_basedate(input_date, input_time, 60, 100);
         // 초단기실황 API제공시간 : 1시간 주기로 매 40분 --> time_to_add를 60, time_to_divide를 100으로 한다.
+        const cur_base_time_str = cur_base_time.toString().padStart(4, '0');
 
         const queryParams = new URLSearchParams({
             serviceKey,
@@ -33,20 +34,24 @@ async function get_Ultra_Nowcast_Data(input_date, input_time, input_x, input_y) 
             numOfRows: '1000',
             dataType: 'JSON',
             base_date: cur_base_date,
-            base_time: cur_base_time,
+            base_time: cur_base_time_str,
             nx: input_x,
             ny: input_y
         });
 
-        const ultra_nowcast_datas = await fetch_ultra_nowcast_data(queryParams);
-        const ultra_nowcast_data = {
-            "RN1": parseFloat(ultra_nowcast_datas[2].obsrValue),
-            "T1H": ultra_nowcast_datas[3].obsrValue,
-            "REH": ultra_nowcast_datas[1].obsrValue,
-            "WSD": ultra_nowcast_datas[7].obsrValue
+        const ultra_nowcast_data = await fetch_ultra_nowcast_data(queryParams);
+        const ultra_nowcast_datas = {
+            "Date": parseInt(cur_base_date),
+            "Time": cur_base_time_str,
+            "X": input_x,
+            "Y": input_y,
+            "RN1": parseFloat(ultra_nowcast_data[2].obsrValue),
+            "T1H": ultra_nowcast_data[3].obsrValue,
+            "REH": ultra_nowcast_data[1].obsrValue,
+            "WSD": ultra_nowcast_data[7].obsrValue
         };
 
-        return ultra_nowcast_data;
+        return ultra_nowcast_datas;
     }
 
     // input_time의 '분'이 40미만일때(00 ~ 39) --> base_time이 1시간 이전인 초단기예보
@@ -68,44 +73,50 @@ async function get_Ultra_Nowcast_Data(input_date, input_time, input_x, input_y) 
             cur_base_date,  //  input_date
         } = calculate.get_basetime_basedate(input_date, input_time, 55, 100);
 
+        const cur_base_time_str = cur_base_time.toString().padStart(4, '0');
+
         const queryParams2 = new URLSearchParams({
             serviceKey,
             pageNo: '1',
             numOfRows: '1000',
             dataType: 'JSON',
             base_date: cur_base_date,
-            base_time: cur_base_time,
+            base_time: cur_base_time_str,
             nx: input_x,
             ny: input_y
         });
 
-        const ultra_nowcast_data = await fetch_ultra_forecast_data(queryParams2);
-        const items = ultra_nowcast_data;
-        const ultra_nowcast_datas = {};
+        const items = await fetch_ultra_forecast_data(queryParams2);
+        const ultra_nowcast_data = {}; // 하나의 객체로 데이터를 저장할 변수를 선언
+        ultra_nowcast_data['Date'] = cur_base_date;
+        ultra_nowcast_data['Time'] = cur_base_time_str;
+        ultra_nowcast_data['X'] = input_x;
+        ultra_nowcast_data['Y'] = input_y;
 
         for (const item of items) {
             const fcstTime = item.fcstTime;
             const category = item.category;
             const fcstValue = item.fcstValue;
 
-            // cur_time과 item.fcstTime이 같고, item.category가 'T1H', 'REH', 'WSD'인 경우에만 저장
+            // cur_time과 item.fcstTime이 같고, item.category가 'T1H', 'RN1', 'REH', 'WSD'인 경우에만 저장
             if (cur_time === Number(fcstTime) && ['T1H', 'RN1', 'REH', 'WSD'].includes(category)) {
-                if (category == 'RN1') {
+                if (category === 'RN1') {
                     if (fcstValue === '강수없음')
-                        ultra_nowcast_datas[category] = 0;
+                        ultra_nowcast_data[category] = 0;
                     else
-                        ultra_nowcast_datas[category] = parseFloat(fcstValue);
+                        ultra_nowcast_data[category] = fcstValue;
+                } else {
+                    ultra_nowcast_data[category] = fcstValue;
                 }
-                else
-                    ultra_nowcast_datas[category] = fcstValue;
             }
         }
-        return ultra_nowcast_datas
+        return [ultra_nowcast_data];
     }
 }
 
-const input_date = '20230726'
-const input_time = '2050';
+
+const input_date = '20230728'
+const input_time = '1522';
 // const input_x = '59';
 // const input_y = '125';
 const input_x = '64';

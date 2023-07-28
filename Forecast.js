@@ -17,10 +17,9 @@ function fetch_forecast_data(queryParams) {
 
 // 단기예보API로 앞으로 6시간의 강수확률을 받아오는 함수
 async function get_Forecast_Data(input_date, input_time, input_x, input_y) {
-    const {
+    let {
         cur_time,       //  '분'을 제거한 현재 시간
         cur_base_time,  //  input_time과 가장 가까운 base_time
-        cur_base_date,  //  input_date
         prev_base_date, //  input_date이 1일일때 이전달의 마지막 날
         next_time       //  input_time + 1시간
     } = calculate.get_basetime_basedate(input_date, input_time, 90, 300);
@@ -37,7 +36,7 @@ async function get_Forecast_Data(input_date, input_time, input_x, input_y) {
         { time: 2300, base: 2000 }
     ];
 
-    let forecast_datas = {};
+    let forecast_datas = [];
     const cur_time_str = cur_time.toString().padStart(4, '0');
     const cur_base_time_str = cur_base_time.toString().padStart(4, '0');
     const next_time_str = next_time.toString().padStart(4, '0');
@@ -65,7 +64,7 @@ async function get_Forecast_Data(input_date, input_time, input_x, input_y) {
         // 17시의 강수확률 구해 forecastData에 넣는다
         const fcstTimeData = prev_forecast_data.find(item => item.fcstTime === cur_time_str && item.category === 'POP');
         if (fcstTimeData)
-            forecast_datas[cur_time_str] = { POP: fcstTimeData.fcstValue };
+            forecast_datas.push({ Date: prev_base_date, Time: cur_time_str, X: input_x, Y: input_y, POP: fcstTimeData.fcstValue });
 
         // 나머지 5시간의 강수확률을 구한다
         // 17시의 단기예보 API를 돌린다
@@ -75,8 +74,8 @@ async function get_Forecast_Data(input_date, input_time, input_x, input_y) {
             pageNo: '1',
             numOfRows: '1000',
             dataType: 'JSON',
-            base_date: cur_base_date,
-            base_time: cur_base_time_str,
+            base_date: prev_base_date,
+            base_time: cur_time_str,
             nx: input_x,
             ny: input_y
         });
@@ -89,8 +88,12 @@ async function get_Forecast_Data(input_date, input_time, input_x, input_y) {
             if (check === 5)
                 break;
 
+
             if (item.category === "POP" && (fcstTime === next_time_str || check > 0)) {
-                forecast_datas[fcstTime] = { POP: item.fcstValue };
+                if (fcstTime === '0000')
+                    prev_base_date = calculate.get_next_basedate(prev_base_date);
+                forecast_datas.push({ Date: prev_base_date, Time: fcstTime, X: input_x, Y: input_y, POP: fcstTimeData.fcstValue });
+                //forecast_datas[fcstTime] = { POP: item.fcstValue };
                 check++;
             }
         }
@@ -104,7 +107,7 @@ async function get_Forecast_Data(input_date, input_time, input_x, input_y) {
             pageNo: '1',
             numOfRows: '1000',
             dataType: 'JSON',
-            base_date: cur_base_date,
+            base_date: prev_base_date,
             base_time: cur_base_time_str,
             nx: input_x,
             ny: input_y
@@ -121,7 +124,9 @@ async function get_Forecast_Data(input_date, input_time, input_x, input_y) {
                 break;
 
             if (item.category === "POP" && (fcstTime === cur_time_str || check > 0)) {
-                forecast_datas[fcstTime] = { POP: item.fcstValue };
+                if (fcstTime === '0000')
+                    prev_base_date = calculate.get_next_basedate(prev_base_date);
+                forecast_datas.push({ Date: prev_base_date, Time: fcstTime, X: input_x, Y: input_y, POP: item.fcstValue });
                 check++;
             }
         }
@@ -130,8 +135,8 @@ async function get_Forecast_Data(input_date, input_time, input_x, input_y) {
 }
 
 // 사용 예시
-const input_date = '20230724'
-const input_time = '1810';
+const input_date = '20230727'
+const input_time = '2340';
 const input_x = '59';
 const input_y = '125';
 
