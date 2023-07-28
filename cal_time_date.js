@@ -2,11 +2,15 @@ function get_basetime_basedate(input_date, input_time, time_to_add, time_to_divi
     let cur_time = parseInt(input_time, 10);
     let cur_base_time = Math.floor((cur_time + time_to_add) / time_to_divide) * time_to_divide - 100;
     const cur_base_date = input_date;
-    let prev_base_date = input_date;
+    let prev_base_date = parseInt(input_date);
 
     if (cur_base_time === -100) {
         cur_base_time = 2300;
-        prev_base_date = get_prev_date(input_date); // 이전달의 마지막 날
+        if (prev_base_date % 10 === 1)
+            prev_base_date = get_prev_date(input_date); // 이전달의 마지막 날
+
+        else
+            prev_base_date -= 1;
     }
 
     cur_time = Math.floor(cur_time / 100) * 100;
@@ -40,7 +44,24 @@ function get_prev_date(input_date) {
     return prev_date;
 }
 
+function get_next_basedate(input_date) {
+    const dateString = input_date.toString(); // int를 문자열로 변환
+    const year = dateString.substring(0, 4); // 연도 추출
+    const month = dateString.substring(4, 6); // 월 추출
+    const day = dateString.substring(6); // 일 추출
+
+    const currentDate = new Date(`${year}-${month}-${day}`);
+    const nextDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+
+    const nextYear = nextDate.getFullYear();
+    const nextMonth = String(nextDate.getMonth() + 1).padStart(2, '0');
+    const nextDay = String(nextDate.getDate()).padStart(2, '0');
+
+    return Number(`${nextYear}${nextMonth}${nextDay}`);
+}
+
 
 module.exports = {
-    get_basetime_basedate: get_basetime_basedate
+    get_basetime_basedate: get_basetime_basedate,
+    get_next_basedate: get_next_basedate
 };
