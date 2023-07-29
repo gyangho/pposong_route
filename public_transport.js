@@ -134,3 +134,8 @@ getPublicTransport(126.9961, 37.5035, 126.96, 37.4946, 202307261200)
     .catch(error => {
         console.error(error);
     });
+
+
+module.exports = {
+    getPublicTransport: getPublicTransport
+};
