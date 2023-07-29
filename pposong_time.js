@@ -33,11 +33,18 @@ function cal_pposong_time(input_date, input_time, route) {
             let minutes = String(end_time % 100).padStart(2, '0');
             end_time = hours + minutes;
 
+            let base_time = Math.floor((parseInt(start_time, 10)) / 100) * 100;
+
+            if (base_time === 2400)
+                base_time = 0;
+
+            let base_time_str = base_time.toString().padStart(4, '0');
+
             if (section.mode === 'WALK') {
                 let X = section.X;
                 let Y = section.Y;
                 // db에서 RN1받아옴
-                // let RN1 = db에서 base_time의 X, Y 강수량 받아옴;
+                // let RN1 = db에서 base_time_str, X, Y 강수량 받아옴;
                 RN1 = 3;   // 예시
 
                 RN1 = parseFloat((RN1 * section.sectionTime * 100 / 60 / 100 / 60).toFixed(2)); // 소수점 둘째짜리까지
@@ -46,13 +53,6 @@ function cal_pposong_time(input_date, input_time, route) {
 
             else   // 이동수단이 BUS, SUBWAY인경우
                 RN1 = 0;
-
-            let base_time = Math.floor((parseInt(start_time, 10)) / 100) * 100;
-
-            if (base_time === 2400)
-                base_time = 0;
-
-            let base_time_str = base_time.toString().padStart(4, '0');
 
             pposong_result.push({
                 DATE: start_date,
