@@ -13,6 +13,7 @@ function cal_pposong_time(input_date, input_time, route) {
         let end_time = start_time;
         let start_date = time.Date;
         let end_date = start_date;
+
         let RN1_sum = 0;
         let RN1;
 
@@ -46,10 +47,19 @@ function cal_pposong_time(input_date, input_time, route) {
             else   // 이동수단이 BUS, SUBWAY인경우
                 RN1 = 0;
 
+            let base_time = Math.floor((parseInt(start_time, 10)) / 100) * 100;
+
+            if (base_time === 2400)
+                base_time = 0;
+
+            let base_time_str = base_time.toString().padStart(4, '0');
+
             pposong_result.push({
                 DATE: start_date,
                 START_TIME: start_time,
                 END_TIME: end_time,
+                TRAVEL_TIME: add_time,
+                BASE_TIME: base_time_str,
                 RN1: RN1,
             });
             start_time = end_time;
@@ -63,19 +73,18 @@ function cal_pposong_time(input_date, input_time, route) {
 
 }
 
-function get_4time(input_date, input_time, time_to_divide) {
+function get_4time(input_date, input_time) {
     let cur_time = parseInt(input_time, 10);
     let cur_base_date = input_date;
 
     let times = [];
 
     for (idx = 0; idx < 4; idx++) {
-        let cur_base_time = Math.floor(cur_time / time_to_divide) * time_to_divide;
+        let cur_base_time = Math.floor(cur_time / 100) * 100;
 
         let cur_time_str = cur_time.toString().padStart(4, '0');
-        let cur_base_time_str = cur_base_time.toString().padStart(4, '0');
 
-        times.push({ Date: cur_base_date, Time: cur_time_str, BaseTime: cur_base_time_str });
+        times.push({ Date: cur_base_date, Time: cur_time_str });
 
         cur_time += 30;
         if (cur_time % 100 >= 60)
