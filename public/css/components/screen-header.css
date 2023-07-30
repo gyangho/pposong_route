@@ -1,0 +1,25 @@
+/*  Header with title aligned-left */
+.screen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 3px inset;
+    margin-bottom: 15px;
+}
+
+.screen-header__title {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 25px;
+    font-weight: 400;
+}
+
+.screen-header__menu-list {
+    display: flex;
+}
+
+.screen-header__menu-btn i {
+    margin-left: 12px;
+    color: black;
+    font-size: 18px;
+}

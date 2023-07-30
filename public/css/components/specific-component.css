@@ -1,0 +1,56 @@
+/* 뽀송타임 상세 경로 컴포넌트 */
+.specific-component {
+    background-color:rgba(240, 248, 255, 0.4);
+    padding:10px 0px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px dashed rgba(0,0,0, 0.5);
+}
+
+.specific-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+}
+
+.specific-column:last-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.specific-column i {
+    padding: 0px 20px;
+    font-size: 30px;
+}
+
+.specific-column .fa-bus {
+    font-size: 25px;
+    padding: 0px 15px;
+}
+
+.specific-icon__weather {
+    color: var(--skyblue);
+}
+.specific-icon__weather-info {
+    text-align: center;
+    margin-top: 7px;
+    font-weight: 600;
+}
+
+
+.specific-stop__name {
+    font-size: 18px;
+    font-weight: 600;
+    padding:10px 0px;
+}
+.specific-stop__time {
+    padding-bottom: 8px;
+    color: var(--grey);
+    font-weight: 600;
+}
+.specific-stop__weather {
+    color:rgb(0, 62, 104);
+    font-weight: 600;
+}

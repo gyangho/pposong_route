@@ -1,0 +1,43 @@
+/* Header with title aligned center */
+.alt-header {
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    border-bottom: 3px inset;
+}
+
+.alt-header__title {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 25px;
+    font-weight: 400;
+    text-align: center;
+}
+
+.alt-header__column {
+    width: 20%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alt-header__column:first-child {
+    margin-right: auto;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.alt-header__column:nth-child(2) {
+    width: 60%;
+    text-align: center;
+}
+
+.alt-header__column:last-child {
+    margin-left: auto;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.alt-header__column  .fa-angle-left:hover {
+    cursor: pointer;
+}
+
