@@ -1,0 +1,53 @@
+.route-list {
+    background-color:rgba(159, 216, 246, 0.2);
+    border-radius: 50px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    margin-bottom: 15px;
+    border-left: 9px solid var(--skyblue);
+}
+
+.route-list__column {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 20px;
+    border-bottom: 2px dotted rgba(0, 0, 0, 0.3);
+}
+
+.route-list__total-time {
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.route-list__walk-time {
+    padding-top: 10px;
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+.route-list__bookmark i {
+    margin-right: 15px;
+    font-size: 25px;
+    color: var(--yellow);
+}
+
+.route-list__vehicle {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+}
+
+.route-list__vehicle-info {
+    color: var(--deepblue);
+}
+
+.route-list__vehicle i {
+    margin-right: 8px;
+}
+
+.route-list__vehicle-stop {
+    margin-left: 10px;
+}

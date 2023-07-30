@@ -1,0 +1,76 @@
+.login-header {
+    margin-top: 70px;
+    margin-bottom: 15px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.login-header__title {
+    font-family: 'Bagel Fat One', cursive;
+    margin-bottom: 10px;
+    font-size: 50px;
+    font-weight: 400;
+}
+.login-header__subtitle {
+    width: 80%;
+    opacity: 0.9;
+    padding: 20px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    margin: 0px 50px;
+}
+
+.login-form input {
+    border: none;
+    padding: 15px 0px;
+    font-size: 18px;
+    margin-bottom: 25px;
+    font-family: 'Pangolin', cursive;
+}
+
+.login-form input:not([type="submit"]) {
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+    transition: border-color 0.3s ease-in-out;
+}
+
+.login-form input::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.login-form input:focus {
+    border-color: var(--skyblue);
+}
+
+.login-form input[type="submit"] {
+    border-radius: 30px;
+    background-color: var(--skyblue);
+    cursor: pointer;
+    padding: 20px 0px;
+    font-size: 20px;
+    font-family: 'Bagel Fat One', cursive;
+    color: white;
+    margin-top: 10px;
+    margin-bottom: 50px;
+}
+
+.login-form a {
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    font-size: 15px;
+    margin-bottom:15px;
+}
+
+.login-form a:hover {
+    transition: color 0.2s ease-in-out;
+    color: var(--babyblue);
+}
+
+.login-form a:last-child{
+    font-family: 'Bagel Fat One', cursive;
+    opacity: 0.8;
+}

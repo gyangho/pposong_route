@@ -1,0 +1,15 @@
+/* 상단바 */
+.status-bar {
+    display: flex;
+    justify-content: center;
+    padding: 5px 3px;
+}
+
+.status-bar__column {
+    width: 50%;
+}
+
+.status-bar__column:last-child {
+    display: flex;
+    justify-content: flex-end;
+}
