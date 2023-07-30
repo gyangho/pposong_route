@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My page</title>
+</head>
+
+<body>
+    <div class="status-bar">
+        <div class="status-bar__column">
+            <span>PPOSONG</span>
+            <i class="fa-solid fa-cloud" style="color: #9fd8f6;"></i>
+        </div>
+
+        <div class="status-bar__column">
+            <span>ver 0.5.1</span>
+        </div>
+
+    </div>
+
+    <header class="alt-header">
+        <div class="alt-header__column">
+            <i class="fa-solid fa-angle-left fa-xl"></i>
+        </div>
+        <div class="alt-header__column">
+            <h1 class="alt-header__title">마이페이지</h1>
+        </div>
+        <div class="alt-header__column">
+            <!-- 헤더 우측에 위치한 홈/마이페이지 버튼 -->
+            <nav class="screen-header__menu">
+                <ul class="screen-header__menu-list">
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main"><i class="fa-solid fa-house fa-lg"></i></a>
+                    </li>
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main/mypage"><i
+                                class="fa-solid fa-circle-user fa-lg"></i></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-screen mypage-screen">
+
+        <div class="user-component">
+            <div class="user-component__column">
+                <img class="user-component__profile"
+                    src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" />
+                <div class="user-component__text">
+                    <h4 class="user-component__title"> {loggedInUsername}님, 안녕하세요!</h4>
+                    <h6 class="user-component__subtitle">-</h6>
+                </div>
+            </div>
+            <!-- 개인정보 수정 아이콘
+            <div class="user-component__column">
+                <a class="user-component__modify-icon" href="user-info">
+                    <i class="fa-solid fa-pencil fa-xl"></i>
+                </a>
+            </div>
+            -->
+        </div>
+
+        <!-- 마이페이지 nav-bar -->
+        <nav class="mypage-nav">
+            <ul class="mypage-nav__list">
+                <li class="mypage-nav__btn">
+                    <a class="mypage-nav__link" href="/main/mypage/bookmark">
+                        <i class="fa-solid fa-star fa-2x"></i>
+                        <div class="mypage-nav__link-text">즐겨찾기 수정</div>
+                    </a>
+                </li>
+                <li class="mypage-nav__btn">
+                    <a class="mypage-nav__link" href="/auth/alter">
+                        <i class="fa-solid fa-lock fa-2x"></i>
+                        <div class="mypage-nav__link-text">비밀번호 변경</div>
+                    </a>
+                </li>
+                <li class="mypage-nav__btn">
+                    <a class="mypage-nav__link" href="/auth/logout">
+                        <i class="fa-solid fa-right-from-bracket fa-2x"></i>
+                        <div class="mypage-nav__link-text">로그아웃</div>
+                    </a>
+                </li>
+                <li class="mypage-nav__btn">
+                    <a class="mypage-nav__link" href="/auth/delete">
+                        <i class="fa-solid fa-xmark fa-2x"></i>
+                        <div class="mypage-nav__link-text">계정 삭제</div>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+    </main>
+
+
+    <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
+    <script src="/js/back.js"></script>
+</body>
+
+</html>

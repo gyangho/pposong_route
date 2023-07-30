@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MainPage</title>
+    <link rel="stylesheet" href="/css/main-style.css">
+    <script defer src="/js/main.js"></script>
+</head>
+
+<body>
+    <div class="status-bar">
+        <div class="status-bar__column">
+            <span>PPOSONG</span>
+            <img src="/image/20.png" style="color: #9fd8f6;">
+        </div>
+
+        <div class="status-bar__column">
+            <span>ver 0.0.1</span>
+        </div>
+    </div>
+
+    <header class="alt-header">
+        <div class="alt-header__column">
+            <a href="#"><!--이전 페이지로 이동하는 링크-->
+                <img src="/image/17.png">
+            </a>
+        </div>
+        <div class="alt-header__column">
+            <h1 class="alt-header__title">뽀송길</h1>
+        </div>
+        <div class="alt-header__column">
+            <nav class="screen-header__menu">
+                <ul class="screen-header__menu-list">
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main"><img src="/image/18.png"></a><!--홈으로 이동하는 링크-->
+                    </li>
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main/mypage"><img
+                                src="/image/19.png"></a><!--마이페이지로 이동하는 링크-->
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        </div>
+    </header>
+
+
+    <div id="weather">
+        <div id="icon"><img src="/image/14.png"></div>
+        <div id="temperature"></div>
+        <div id="others"></div>
+        <br><a>Current Weather</a>
+    </div>
+
+    <div id="time" onclick="location.href='/main/POI'"><!--뽀송길 검색으로 넘어가는 링크-->
+        <img src="/image/13.png"><br><b>뽀송길</b>
+    </div>
+
+    <div id="alert"></div>
+    <div id="summary">
+        <div id="now">Now<p>25℃</p><img src="/image/14.png"><br>
+            <div class="rain"><img src="/image/16.png">61%</div>
+        </div>
+        <div id="one">10pm<p>25℃</p><img src="/image/14.png"><br>
+            <div class="rain"><img src="/image/16.png">61%</div>
+        </div>
+        <div id="two">11pm<p>24℃</p><img src="/image/15.png"><br>
+            <div class="rain"><img src="/image/16.png">18%</div>
+        </div>
+        <div id="three">12am<p>24℃</p><img src="/image/15.png"><br>
+            <div class="rain"><img src="/image/16.png">18%</div>
+        </div>
+        <div id="four">1am<p>24℃</p><img src="/image/14.png"><br>
+            <div class="rain"><img src="/image/16.png">56%</div>
+        </div>
+    </div>
+
+</body>
+
+</html>

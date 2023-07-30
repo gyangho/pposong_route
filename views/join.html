@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPosong-gil</title>
+</head>
+
+<body>
+    <div id="wrap">
+        <main class="main-screen">
+            <header class="login-header">
+                <h1 class="login-header__title">뽀송길</h1>
+                <p class="login-header__subtitle">
+                    뽀송길에 오신걸 환영해요!</p>
+            </header>
+            <!-- 서버 연동 시 get=>post로 수정 -->
+            <form class="login-form joinin-form" action="/auth/register_process" method="post">
+                <input name="username" required type="text" placeholder="ID" />
+                <input name="pwd" required type="password" placeholder="Password" />
+                <input name="pwd2" required type="password" placeholder="Password Confirm" />
+                <input type="submit" value="회원가입" />
+                <a href="/main">로그인 페이지로 돌아가기</a>
+            </form>
+        </main>
+    </div>
+    <footer class="footer">
+        <div class="project-info">
+            <h4 class="project-name">뽀송길</h4>
+            <p>2023 - SSU Software Project</p>
+        </div>
+    </footer>
+    <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
+    <script src="/js/join.js"></script>
+</body>
+
+</html>

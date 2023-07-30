@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result</title>
+</head>
+
+<body>
+    <div class="status-bar">
+        <div class="status-bar__column">
+            <span>PPOSONG</span>
+            <!-- Icon -->
+            <i class="fa-solid fa-cloud" style="color: #9fd8f6;"></i>
+        </div>
+
+        <div class="status-bar__column">
+            <span>ver 0.5.1</span>
+            <!-- version information &Icon-->
+        </div>
+    </div>
+
+    <header class="alt-header">
+        <div class="alt-header__column">
+            <i class="fa-solid fa-angle-left fa-xl"></i>
+        </div>
+        <div class="alt-header__column">
+            <h1 class="alt-header__title">뽀송길 검색 결과</h1>
+        </div>
+        <div class="alt-header__column">
+            <!-- 헤더 우측에 위치한 홈/마이페이지 버튼 -->
+            <nav class="screen-header__menu">
+                <ul class="screen-header__menu-list">
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main"><i class="fa-solid fa-house fa-lg"></i></a>
+                    </li>
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main/mypage"><i
+                                class="fa-solid fa-circle-user fa-lg"></i></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-screen">
+        <div class="route-list">
+            <a href="#" onclick="post요청보내기('/main/POI/result/pposongtime1','{{R}}')">
+                <div class=" route-list__column">
+                    <div class="route-list__time">
+                        <h4 class="route-list__total-time">{{T}}분</h4>
+                        <h6 class="route-list__walk-time">도보 17분</h6>
+                    </div>
+                    <div class="route-list__bookmark">
+                        <i class="fa-regular fa-star fa-xl"></i>
+                    </div>
+                </div>
+
+                <div class="route-list__vehicle">
+                    <div class="route-list__vehicle-info">
+                        <i class="fa-solid fa-bus"></i>540,643
+                    </div>
+                    <div class="route-list__vehicle-stop">
+                        <h5>신반포역.세화여중고(중)</h5>
+                    </div>
+                </div>
+
+                <div class="route-list__vehicle">
+                    <div class="route-list__vehicle-info">
+                        <i class="fa-solid fa-bus"></i>752
+                    </div>
+                    <div class="route-list__vehicle-stop">
+                        <h5>갯마을앞(중)</h5>
+                    </div>
+                </div>
+
+                <div class="route-list__vehicle">
+                    <div class="route-list__vehicle-info">
+                        <i class="fa-solid fa-circle-dot"></i>
+                    </div>
+                    <div class="route-list__vehicle-stop">
+                        <h5>숭실대별관앞</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="route-list">
+            <div class="route-list__column">
+                <div class="route-list__time">
+                    <h4 class="route-list__total-time">40분</h4>
+                    <h6 class="route-list__walk-time">도보 7분</h6>
+                </div>
+                <div class="route-list__bookmark">
+                    <i class="fa-regular fa-star fa-xl"></i>
+                </div>
+            </div>
+
+            <div class="route-list__vehicle">
+                <div class="route-list__vehicle-info">
+                    <i class="fa-solid fa-train-subway"></i>9호선 신반포
+                </div>
+                <div class="route-list__vehicle-stop">
+                    <h5></h5>
+                </div>
+            </div>
+
+            <div class="route-list__vehicle">
+                <div class="route-list__vehicle-info">
+                    <i class="fa-solid fa-bus"></i>752
+                </div>
+                <div class="route-list__vehicle-stop">
+                    <h5>노들역</h5>
+                </div>
+            </div>
+
+            <div class="route-list__vehicle">
+                <div class="route-list__vehicle-info">
+                    <i class="fa-solid fa-circle-dot"></i>
+                </div>
+                <div class="route-list__vehicle-stop">
+                    <h5>숭실대별관앞</h5>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="route-list">
+            <div class="route-list__column">
+                <div class="route-list__time">
+                    <h4 class="route-list__total-time">42분</h4>
+                    <h6 class="route-list__walk-time">도보 7분</h6>
+                </div>
+                <div class="route-list__bookmark">
+                    <i class="fa-regular fa-star fa-xl"></i>
+                </div>
+            </div>
+
+            <div class="route-list__vehicle">
+                <div class="route-list__vehicle-info">
+                    <i class="fa-solid fa-bus"></i>6411
+                </div>
+                <div class="route-list__vehicle-stop">
+                    <h5>신반포역.세화여중고(중)</h5>
+                </div>
+            </div>
+
+            <div class="route-list__vehicle">
+                <div class="route-list__vehicle-info">
+                    <i class="fa-solid fa-bus"></i>752
+                </div>
+                <div class="route-list__vehicle-stop">
+                    <h5>동작역.국립현충원</h5>
+                </div>
+            </div>
+
+            <div class="route-list__vehicle">
+                <div class="route-list__vehicle-info">
+                    <i class="fa-solid fa-circle-dot"></i>
+                </div>
+                <div class="route-list__vehicle-stop">
+                    <h5>숭실대별관앞</h5>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
+    <script src="/js/back.js"></script>
+    <script>
+        function post요청보내기(url, routeValue) {
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = url;
+            document.body.appendChild(form);
+            // Route 값을 추가하는 hidden input 필드 생성
+            const routeInput = document.createElement("input");
+            routeInput.type = "hidden";
+            routeInput.name = "Route";
+            routeInput.value = routeValue;
+            form.appendChild(routeInput);
+            console.log("POST");
+            form.submit();
+        }
+    </script>
+</body>
+
+</html>

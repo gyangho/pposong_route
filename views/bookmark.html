@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookmark</title>
+</head>
+
+<body>
+    <div class="status-bar">
+        <div class="status-bar__column">
+            <span>PPOSONG</span>
+            <i class="fa-solid fa-cloud" style="color: #9fd8f6;"></i>
+        </div>
+
+        <div class="status-bar__column">
+            <span>ver 0.5.1</span>
+        </div>
+
+    </div>
+
+    <header class="alt-header">
+        <div class="alt-header__column">
+            <i class="fa-solid fa-angle-left fa-xl"></i>
+        </div>
+        <div class="alt-header__column">
+            <h1 class="alt-header__title">즐겨찾기</h1>
+        </div>
+        <div class="alt-header__column">
+            <nav class="screen-header__menu">
+                <ul class="screen-header__menu-list">
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main"><i class="fa-solid fa-house fa-lg"></i></a>
+                    </li>
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main/mypage"><i
+                                class="fa-solid fa-circle-user fa-lg"></i></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-screen bookmark-screen">
+
+        <div class="bookmark-component">
+            <a href="#" onclick="post요청보내기('/main/POI/result/pposongtime1','{{R}}')">
+                <div class="bookmark-column">
+                    <div class="bookmark__route-icon">
+                        <i class="fa-solid fa-route fa-xl"></i>
+                    </div>
+                    <div class="bookmark__info">
+                        <h4 class="bookmark__location">9호선 신반포역<i class="fa-solid fa-arrow-right"></i>숭실대학교 정보과학관</h4>
+                        <h6 class="bookmark__vehicle">
+                            <i class="fa-solid fa-bus"></i>540,643
+                            <i class="fa-solid fa-chevron-right"></i>
+                            <i class="fa-solid fa-bus"></i>752
+                        </h6>
+                    </div>
+                </div>
+            </a>
+            <div class="bookmark-column">
+                <div class="bookmark__star-icon">
+                    <i class="fa-solid fa-star fa-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bookmark-component">
+            <a href="#" onclick="post요청보내기('/main/POI/result/pposongtime1','{{R}}')">
+                <div class="bookmark-column">
+                    <div class="bookmark__route-icon">
+                        <i class="fa-solid fa-route fa-xl"></i>
+                    </div>
+                    <div class="bookmark__info">
+                        <h4 class="bookmark__location">스타벅스 남성역점<i class="fa-solid fa-arrow-right"></i>숭실대학교 정보과학관</h4>
+                        <h6 class="bookmark__vehicle"><i class="fa-solid fa-bus"></i>752</h6>
+                    </div>
+                </div>
+            </a>
+            <div class="bookmark-column">
+                <div class="bookmark__star-icon">
+                    <i class="fa-solid fa-star fa-xl"></i>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
+    <script src="/js/bookmark.js"></script>
+    <script src="/js/back.js"></script>
+    <script>
+        function post요청보내기(url, routeValue) {
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = url;
+            document.body.appendChild(form);
+            // Route 값을 추가하는 hidden input 필드 생성
+            const routeInput = document.createElement("input");
+            routeInput.type = "hidden";
+            routeInput.name = "Route";
+            routeInput.value = routeValue;
+            form.appendChild(routeInput);
+            console.log("POST");
+            form.submit();
+        }
+    </script>
+</body>
+
+</html>

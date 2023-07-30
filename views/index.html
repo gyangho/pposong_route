@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPosong-gil</title>
+</head>
+
+<body>
+    <div class="status-bar">
+        <div class="status-bar__column">
+            <span>PPOSONG</span>
+            <i class="fa-solid fa-cloud" style="color: #9fd8f6;"></i>
+        </div>
+
+        <div class="status-bar__column">
+            <span>ver 0.5.1</span>
+        </div>
+    </div>
+
+    <header class="login-header">
+        <h1 class="login-header__title">뽀송길</h1>
+        <p class="login-header__subtitle">
+            If you have a Account, log in with your email or phone number.</p>
+    </header>
+
+    <!-- 서버 연동 시 get=>post로 수정 -->
+    <form class="login-form" action="/auth/login_process" method="post">
+        <input name="username" required type="text" placeholder="Email or phone number" />
+        <input name="pwd" required type="password" placeholder="Password" />
+        <input type="submit" value="Log In" class="login-btn" />
+        <a href="/auth/inquiry">Find Account or Password</a>
+        <a href="/auth/register">뽀송길이 처음이신가요?</a>
+    </form>
+
+    <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
+    <script src="/js/join.js"></script>
+</body>
+
+</html>

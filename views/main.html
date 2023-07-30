@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+
+<body>
+    <div class="status-bar">
+        <div class="status-bar__column">
+            <span>PPOSONG</span>
+            <i class="fa-solid fa-cloud" style="color: #9fd8f6;"></i>
+        </div>
+
+        <div class="status-bar__column">
+            <span>ver 0.5.1</span>
+        </div>
+
+    </div>
+
+    <header class="alt-header">
+        <div class="alt-header__column">
+            <i class="fa-solid fa-angle-left fa-xl"></i>
+        </div>
+        <div class="alt-header__column">
+            <h1 class="alt-header__title">뽀송길</h1>
+        </div>
+        <div class="alt-header__column">
+            <!-- 헤더 우측에 위치한 홈/마이페이지 버튼 -->
+            <nav class="screen-header__menu">
+                <ul class="screen-header__menu-list">
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main"><i class="fa-solid fa-house fa-lg"></i></a>
+                    </li>
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main/mypage"><i
+                                class="fa-solid fa-circle-user fa-lg"></i></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-screen home-screen">
+        <!-- 메인 홈 화면 -->
+        <div class="home-component">
+            <div class="home-column home-weather">
+                <div class="location">
+                    <i class="fa-solid fa-location-arrow"></i>
+                    <span class="location-name"></span>
+                </div>
+
+                <span class="temp-now">--.--°</span>
+                <span class="temp-feel">체감온도 --.--°</span>
+
+                <img class="weather-icon" />
+                <span class="weather-now">Weather</span>
+
+                <span class="humid">습도 --%</span>
+                <span class="wind">풍속 -.-m/s</span>
+            </div>
+
+            <div class="home-column home-pposong">
+                <span class="home-pposong__title">뽀송길 찾기</span>
+                <span class="home-pposong__subtitle">뽀송한 길로 안내해 드릴게요!</span>
+                <img class="home-pposong__img" src="/image/pposonggil/pposong-icon.png" />
+            </div>
+        </div>
+
+        <div class="home-component">
+            <div class="home-column home-notice">
+                <i class="fa-solid fa-bell"></i>
+                <span class="home-notice__text">서울(서남권) 호우 주의보 발효</span>
+            </div>
+        </div>
+        </div>
+    </main>
+
+    <div id="intro-screen">
+        <div class="intro-header">
+            <h1 class="intro-header__title">뽀송길</h1>
+            <p class="intro-header__subtitle"> 뽀송하게 이동할 시간 <i class="fa-solid fa-cloud" style="color: white;"></i></p>
+        </div>
+    </div>
+    <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
+    <script src="/js/back.js"></script>
+    <script src="/js/weather.js"></script>
+    <script src="/js/home.js"></script>
+</body>
+
+</html>
