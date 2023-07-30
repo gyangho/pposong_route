@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Open+Sans:wght@400;600&family=Pangolin&display=swap');
+@import "reset.css";
+@import "variables.css";
+
+/* Components */
+@import "components/status-bar.css";
+@import "components/screen-header.css";
+@import "components/route-component.css";
+@import "components/nav-component.css";
+@import "components/specific-component.css";
+@import "components/alt-screen-header.css";
+@import "components/footer.css";
+
+/* Screens */
+@import "screens/intro.css";
+@import "screens/login.css";
+@import "screens/mypage.css";
+@import "screens/bookmark.css";
+@import "screens/result.css";
+@import "screens/home.css";
+@import "screens/welcome.css";
+
+body {
+    /*font-family: 'Open Sans', sans-serif;*/
+    font-family: 'Pangolin', 'Open Sans', sans-serif, cursive;
+}
+/* Page Animation */
+@keyframes slideInFromBottom {
+    0% {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.main-screen {
+    padding: 0px 20px;
+    animation: slideInFromBottom 1s ease-out;
+}
+
