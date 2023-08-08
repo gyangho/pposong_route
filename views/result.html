@@ -1,0 +1,56 @@
+'<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result</title>
+</head>
+
+<body>
+    <div class="status-bar">
+        <div class="status-bar__column">
+            <span>PPOSONG</span>
+            <!-- Icon -->
+            <i class="fa-solid fa-cloud" style="color: #9fd8f6;"></i>
+        </div>
+
+        <div class="status-bar__column">
+            <span>ver 0.5.1</span>
+            <!-- version information &Icon-->
+        </div>
+    </div>
+
+    <header class="alt-header">
+        <div class="alt-header__column">
+            <i class="fa-solid fa-angle-left fa-xl"></i>
+        </div>
+        <div class="alt-header__column">
+            <h1 class="alt-header__title">뽀송길 검색 결과</h1>
+        </div>
+        <div class="alt-header__column">
+            <!-- 헤더 우측에 위치한 홈/마이페이지 버튼 -->
+            <nav class="screen-header__menu">
+                <ul class="screen-header__menu-list">
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main"><i class="fa-solid fa-house fa-lg"></i></a>
+                    </li>
+                    <li class="screen-header__menu-btn">
+                        <a class="screen-header__menu-link" href="/main/mypage"><i
+                                class="fa-solid fa-circle-user fa-lg"></i></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-screen">
+        {{DYNAMIC_CONTENT}}
+    </main>
+
+    <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
+    <script src="/js/back.js"></script>
+</body>
+
+</html>
