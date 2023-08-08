@@ -1,5 +1,55 @@
 const convert = require('./convert_XY.js');
 const fetch = require('node-fetch');
+// totalWalkDistance
+// totalWalkTime
+const routeColorMap = {
+    '수도권1호선': '#0052A4',
+    '수도권1호선(급행)': '#0052A4',
+    '수도권1호선(특급)': '#0052A4',
+    '수도권2호선': '#00A84D',
+    '수도권3호선': '#EF7C1C',
+    '수도권4호선': '#00A5DE',
+    '수도권4호선(급행)': '#00A5DE',
+    '수도권5호선': '#996CAC',
+    '수도권6호선': '#CD7C2F',
+    '수도권7호선': '#747F00',
+    '수도권8호선': '#E6186C',
+    '수도권9호선': '#BDB092',
+    '수도권9호선(급행)': '#BDB092',
+    '수인분당선': '#F5A200',
+    '수인분당선(급행)': '#F5A200',
+    '공항철도': '#0090D2',
+    '경의중앙선': '#77C4A3',
+    '경의중앙선(급행)': '#77C4A3',
+    '에버라인': '#56AD2D',
+    '경춘선': '#0C8E72',
+    '경춘선(급행)': '#0C8E72',
+    '신분당선': '#D4003B',
+    '의정부경전철': '#FDA600',
+    '경강선': '#0054A6',
+    '우이신설선': '#B0CE18',
+    '서해선': '#81A914',
+    '김포골드라인': '#A17800',
+    '신림선': '#6789CA',
+    '인천1호선': '#7CA8D5',
+    '인천2호선': '#ED8B00',
+    '대전1호선': '#007448',
+    '대구1호선': '#D93F5C',
+    '대구2호선': '#00AA80',
+    '대구3호선': '#FFB100',
+    '광주1호선': '#009088',
+    '부산1호선': '#F06A00',
+    '부산2호선': '#81BF48',
+    '부산3호선': '#BB8C00',
+    '부산4호선': '#217DCB',
+    '동해선': '#003DA5',
+    '부산김해경전철': '#8652A1',
+};
+
+// 정규식을 사용하여 숫자만 추출하는 함수
+function extractNumbersFromString(str) {
+    return str.replace(/\D/g, '');
+}
 
 async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
     const options = {
@@ -46,20 +96,45 @@ async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
 
             // 루트 개수만큼 반복(5번)
             for (let cur_itinerary = 0; cur_itinerary < itinerary_count; cur_itinerary++) {
-                const totalTime = itinerary[cur_itinerary].totalTime;
+                let totalTime = itinerary[cur_itinerary].totalTime; // 총 소요시간 'OO시간 OO분'으로 형식 바꿈
+                if (totalTime >= 60) {
+                    if (totalTime / 60 >= 60)
+                        totalTime = `${Math.floor(totalTime / 3600)}시간 ${totalTime % 60}분`;
+                    else
+                    totalTime = `${totalTime % 60}분`;
+                }
+                let totalWalkTime = itinerary[cur_itinerary].totalWalkTime; // 총 도보시간 'OO시간 OO분'으로 형식 바꿈
+                if (totalWalkTime >= 60) {
+                    if (totalWalkTime / 60 >= 60)
+                        totaltotalWalkTimeTime = `${Math.floor(totalWalkTime / 3600)}시간 ${totalWalkTime % 60}분`;
+                    else
+                    totalWalkTime = `${totalWalkTime % 60}분`;
+                }
+                let totalWalkDistance = itinerary[cur_itinerary].totalWalkDistance; // 총 도보거리 'Okm이상시 O.OOkm로 변경
+                if (totalWalkDistance / 1000 >= 1)
+                    totalWalkDistance = `${(totalWalkDistance / 1000).toFixed(2)}km`;
+                else
+                    totalWalkDistance = `${totalWalkDistance}m`;
+                
                 const transferCount = itinerary[cur_itinerary].transferCount;
                 const method = itinerary[cur_itinerary].legs;
                 const section_Count = method.length;
+
                 const sections = []; // 구간 객체배열
 
                 // 구간 개수만큼 반복
                 for (let cur_section = 0; cur_section < section_Count; cur_section++) {
-                    const section_start_name = method[cur_section].start.name;
+                    const section_start_name = method[cur_section].mode === 'SUBWAY'
+                        ? method[cur_section].start.name + '역'
+                        : method[cur_section].start.name;
                     const section_start_lat = method[cur_section].start.lat;
                     const section_start_lon = method[cur_section].start.lon;
                     const section_start = convert.dfs_xy_conv('toXY', `${section_start_lat}`, `${section_start_lon}`); // 구간의 출발지 위경도 --> XY
 
-                    const section_end_name = method[cur_section].end.name;
+                    const section_end_name = method[cur_section].mode === 'SUBWAY'
+                        ? method[cur_section].end.name + '역'
+                        : method[cur_section].end.name;
+
                     const section_end_lat = method[cur_section].end.lat;
                     const section_end_lon = method[cur_section].end.lon;
                     const section_end = convert.dfs_xy_conv('toXY', `${section_end_lat}`, `${section_end_lon}`); // 구간의 목적지 위경도 --> XY
@@ -87,11 +162,17 @@ async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
                     if (method[cur_section].mode === 'WALK' || method[cur_section].mode === 'TRANSFER') {
                         // 구간의 이동수단이 도보 or 환승일때
                         section.mode = 'WALK';
-                    } else if (method[cur_section].mode === 'BUS' || method[cur_section].mode === 'SUBWAY') {
+                    } else if (method[cur_section].mode === 'BUS') {
+                        section.mode = `${method[cur_section].mode}`; // 이동수단
+                        section.route_name = extractNumbersFromString(`${method[cur_section].route}`); // 노선 이름
+                        section.route_color = `#${method[cur_section].routeColor}`; // 노선 색
+                        section.stationcount = `${method[cur_section].passStopList.stationList.length}`; // 지나가는 정류장 수
+                    }
+                    else if (method[cur_section].mode === 'SUBWAY') {
                         // 이동수단이 버스 or 지하철일때
                         section.mode = `${method[cur_section].mode}`; // 이동수단
                         section.route_name = `${method[cur_section].route}`; // 노선 이름
-                        section.route_color = `${method[cur_section].routeColor}`; // 노선 색
+                        section.route_color = routeColorMap[section.route_name] || '#000000';
                         section.stationcount = `${method[cur_section].passStopList.stationList.length}`; // 지나가는 정류장 수
                     }
 
@@ -110,7 +191,10 @@ async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
                         X: end_point.x,
                         Y: end_point.y,
                     },
+
                     totalTime: totalTime, // 총 소요시간
+                    totalWalkTime: totalWalkTime, // 도보 총 소요시간
+                    totalWalkDistance:totalWalkDistance, // 도보 총 거리
                     transferCount: transferCount, // 환승 횟수
                     section_Count: section_Count, // 구간 개수
                     sections: sections, // 구간 객체
@@ -126,15 +210,6 @@ async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
         console.error(err);
     }
 }
-
-getPublicTransport(126.9961, 37.5035, 126.96, 37.4946, 202307261200)
-    .then(Routes => {
-        console.log(Routes);
-    })
-    .catch(error => {
-        console.error(error);
-    });
-
 
 module.exports = {
     getPublicTransport: getPublicTransport
