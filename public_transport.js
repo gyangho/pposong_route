@@ -44,6 +44,15 @@ const routeColorMap = {
     '부산4호선': '#217DCB',
     '동해선': '#003DA5',
     '부산김해경전철': '#8652A1',
+    'KTX': '#204080',
+    'KTX산천': '#204080',
+    'KTX이음': '#204080',
+    'SRT': '#5A2149',
+    '무궁화': '#E06040',
+    '새마을': '#5288F5',
+    '누리로': '#3D99C2',
+    'ITX새마을': '#C30E2F',
+    'ITX청춘':'#1CAE4C'
 };
 
 // 정규식을 사용하여 숫자만 추출하는 함수
@@ -66,7 +75,7 @@ async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
             endY: endY,
             lang: 0,
             format: 'json',
-            count: 5,
+            count: 10,
             searchDttm: searchDttm,
         }),
     };
@@ -99,16 +108,16 @@ async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
                 let totalTime = itinerary[cur_itinerary].totalTime; // 총 소요시간 'OO시간 OO분'으로 형식 바꿈
                 if (totalTime >= 60) {
                     if (totalTime / 60 >= 60)
-                        totalTime = `${Math.floor(totalTime / 3600)}시간 ${totalTime % 60}분`;
+                        totalTime = `${Math.floor(totalTime / 3600)}시간 ${Math.floor(totalTime % 3600/60)}분`;
                     else
-                    totalTime = `${totalTime % 60}분`;
+                        totalTime = `${Math.floor(totalTime / 60)}분`;
                 }
                 let totalWalkTime = itinerary[cur_itinerary].totalWalkTime; // 총 도보시간 'OO시간 OO분'으로 형식 바꿈
                 if (totalWalkTime >= 60) {
                     if (totalWalkTime / 60 >= 60)
-                        totaltotalWalkTimeTime = `${Math.floor(totalWalkTime / 3600)}시간 ${totalWalkTime % 60}분`;
+                        totalWalkTime = `${Math.floor(totalWalkTime / 3600)}시간 ${Math.floor(totalWalkTime % 3600/60)}분`;
                     else
-                    totalWalkTime = `${totalWalkTime % 60}분`;
+                        totalWalkTime = `${Math.floor(totalWalkTime /60)}분`;
                 }
                 let totalWalkDistance = itinerary[cur_itinerary].totalWalkDistance; // 총 도보거리 'Okm이상시 O.OOkm로 변경
                 if (totalWalkDistance / 1000 >= 1)
@@ -124,14 +133,16 @@ async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
 
                 // 구간 개수만큼 반복
                 for (let cur_section = 0; cur_section < section_Count; cur_section++) {
-                    const section_start_name = method[cur_section].mode === 'SUBWAY'
+                    const section_start_name = (method[cur_section].mode === 'SUBWAY'
+                        || method[cur_section].mode === 'TRAIN')
                         ? method[cur_section].start.name + '역'
                         : method[cur_section].start.name;
                     const section_start_lat = method[cur_section].start.lat;
                     const section_start_lon = method[cur_section].start.lon;
                     const section_start = convert.dfs_xy_conv('toXY', `${section_start_lat}`, `${section_start_lon}`); // 구간의 출발지 위경도 --> XY
 
-                    const section_end_name = method[cur_section].mode === 'SUBWAY'
+                    const section_end_name = (method[cur_section].mode === 'SUBWAY'
+                        || method[cur_section].mode === 'TRAIN')
                         ? method[cur_section].end.name + '역'
                         : method[cur_section].end.name;
 
@@ -140,7 +151,11 @@ async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
                     const section_end = convert.dfs_xy_conv('toXY', `${section_end_lat}`, `${section_end_lon}`); // 구간의 목적지 위경도 --> XY
 
                     const sectionTime = method[cur_section].sectionTime;
-                    const distance = method[cur_section].distance;
+                    let distance = method[cur_section].distance; // 구간 거리 'Okm이상시 O.OOkm로 변경
+                    if (distance / 1000 >= 1)
+                    distance = `${(distance / 1000).toFixed(2)}km`;
+                    else
+                    distance = `${distance}m`;
 
                     const section = {
                         section_start: {
@@ -166,14 +181,22 @@ async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
                         section.mode = `${method[cur_section].mode}`; // 이동수단
                         section.route_name = extractNumbersFromString(`${method[cur_section].route}`); // 노선 이름
                         section.route_color = `#${method[cur_section].routeColor}`; // 노선 색
-                        section.stationcount = `${method[cur_section].passStopList.stationList.length}`; // 지나가는 정류장 수
+                        section.stationcount = `${method[cur_section].passStopList.stationList.length-1}개 역 이동`; // 지나가는 정류장 수
                     }
-                    else if (method[cur_section].mode === 'SUBWAY') {
-                        // 이동수단이 버스 or 지하철일때
+                    else if (method[cur_section].mode === 'SUBWAY'){
+                        // 이동수단이 지하철일때
                         section.mode = `${method[cur_section].mode}`; // 이동수단
                         section.route_name = `${method[cur_section].route}`; // 노선 이름
                         section.route_color = routeColorMap[section.route_name] || '#000000';
-                        section.stationcount = `${method[cur_section].passStopList.stationList.length}`; // 지나가는 정류장 수
+                        section.stationcount = `${method[cur_section].passStopList.stationList.length-1}개 역 이동`; // 지나가는 정류장 수
+                    }
+                        
+                    else if (method[cur_section].mode === 'TRAIN' || method[cur_section].mode === 'EXPRESSBUS' ){
+                        // 이동수단이 기차일때
+                        section.mode = `${method[cur_section].mode}`; // 이동수단
+                        section.route_name = `${method[cur_section].route}`.split(':')[0];
+                        section.route_color = routeColorMap[section.route_name] || '#000000';
+                        section.stationcount = '';
                     }
 
                     sections.push(section);

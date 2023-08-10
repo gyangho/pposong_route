@@ -50,8 +50,11 @@ app.get('/main/POI', async (req, res) => {
 
     try {
         //Routes = await transport.getPublicTransport(126.9961, 37.5035, 126.96, 37.4946, stime) //신반포역->정보관
-        // Routes = await transport.getPublicTransport(127.2148, 37.5818, 126.96, 37.4946, stime) //집->정보관
-        Routes = await transport.getPublicTransport(126.6447, 37.3789, 126.96, 37.4946, stime) // 용인 ->정보관
+        //Routes = await transport.getPublicTransport(127.2148, 37.5818, 126.96, 37.4946, stime) //집->정보관
+        // Routes = await transport.getPublicTransport(126.6447, 37.3789, 126.96, 37.4946, stime) // 용인 ->정보관
+        // Routes = await transport.getPublicTransport(126.9961, 37.2634, 126.96, 37.4946, stime) // 수원 ->정보관
+        // Routes = await transport.getPublicTransport(127.0964, 37.1986, 126.96, 37.4946, stime) // 동탄 ->정보관
+        Routes = await transport.getPublicTransport(127.7277, 37.881, 126.96, 37.4946, stime) // 춘천 ->정보관
         if (Routes.length < 1) {
             //경로없음
             res.send("경로없음");
@@ -68,27 +71,50 @@ app.get('/main/POI', async (req, res) => {
                             const vehicleHtml = section => {
                                 let vehicleIcon = '';
                                 let additionalHtml = '';
-                            
-                                if (section.mode === 'WALK') {
-                                    vehicleIcon = '<i class="fa-solid fa-person-walking"></i>';
 
-                                } else if (section.mode === 'SUBWAY') {
-                                    vehicleIcon = '<i class="fa-solid fa-subway"></i>';
+                                let section_time = section.sectionTime;
+                                section_time = Math.floor(section_time / 60);
+                                if (section_time % 60 >= 30)
+                                    section_time++;
+                                if (section_time === 0)
+                                    section_time++;
+                                section_time = `${section_time}분`;
+
+                                let distance = section.distance;
+
+                                if (section.mode === 'WALK' && distance != '0m') {
+                                    vehicleIcon = '<i class="fa-solid fa-person-walking"></i>';
                                     additionalHtml = `
+                                        <div>${distance}<br>
+                                        ${section_time}</div>`;
+
+                                } else if (section.mode === 'SUBWAY' || section.mode === 'TRAIN') {
+                                    vehicleIcon = `
+                                        <i class="fa-solid fa-subway"></i>
                                         <span class="route-name" style="color: ${section.route_color};">
                                             ${section.route_name}
-                                        </span>
+                                        </span>`;
+                                    additionalHtml = `
                                         <div class="route-list__vehicle-stop"></div>
-                                            ${section.section_start.name} ~ ${section.section_end.name}`;
+                                        <div>
+                                        ${section.section_start.name} ~ ${section.section_end.name}<br>
+                                        ${section.stationcount}<br>
+                                        ${section_time}
+                                        </div>`;
                                     
-                                } else if (section.mode === 'BUS') {
-                                    vehicleIcon = '<i class="fa-solid fa-bus"></i>';
-                                    additionalHtml = `
+                                } else if (section.mode === 'BUS' || section.mode === 'EXPRESSBUS') {
+                                    vehicleIcon = `
+                                        <i class="fa-solid fa-bus"></i>
                                         <span class="route-name" style="color: ${section.route_color};">
                                             ${section.route_name}
-                                        </span>
+                                        </span>`;
+                                    additionalHtml = `
                                         <div class="route-list__vehicle-stop"></div>
-                                            ${section.section_start.name} ~ ${section.section_end.name}`;
+                                        <div>
+                                            ${section.section_start.name} ~ ${section.section_end.name}<br>
+                                            ${section.stationcount}<br>
+                                            ${section_time}
+                                        </div>`;
                                 }
                             
                                 return `
