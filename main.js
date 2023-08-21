@@ -1,3 +1,16 @@
+const express = require('express');
+const https = require('https');
+const transport = require('./public_transport.js');
+const fs = require('fs');
+const bodyParser = require('body-parser');
+const path = require('path');
+const url = require('url');
+const { resourceUsage } = require('process');
+// var POI = require('./POI.js');
+
+const app = express();
+const port = 1521;
+
 //날짜, 시간 구하기
 function getTimeStamp(i) {
     var d = new Date();
@@ -25,16 +38,6 @@ function leadingZeros(n, digits) {
     return n.toString().padStart(digits, '0');
 }
 
-const express = require('express');
-const https = require('https');
-const transport = require('./public_transport.js');
-const fs = require('fs');
-const bodyParser = require('body-parser');
-const path = require('path');
-const ejs = require('ejs');
-
-const app = express();
-const port = 1521;
 const options = {
     key: fs.readFileSync('./rootca.key'),
     cert: fs.readFileSync('./rootca.crt')
@@ -47,14 +50,28 @@ app.use(express.static(path.join(__dirname, '/public')));
 
 app.get('/main/POI', async (req, res) => {
     let stime = getTimeStamp(1) + "1200";
+    let itime = parseInt(stime, 10);
+    const filePath = path.join(__dirname, '/views/mainFunc.html');
+    let Routes = {};
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            res.status(500).send('Error reading file');
+        }
+        else {
+            res.send(data);
+        }
+    });
+
+});
+
+app.get('/main/POI/result', async (req, res) => {
+    let stime = getTimeStamp(1) + "1200";
+    var resource = req.query;
 
     try {
-        //Routes = await transport.getPublicTransport(126.9961, 37.5035, 126.96, 37.4946, stime) //신반포역->정보관
-        //Routes = await transport.getPublicTransport(127.2148, 37.5818, 126.96, 37.4946, stime) //집->정보관
-        // Routes = await transport.getPublicTransport(126.6447, 37.3789, 126.96, 37.4946, stime) // 용인 ->정보관
-        // Routes = await transport.getPublicTransport(126.9961, 37.2634, 126.96, 37.4946, stime) // 수원 ->정보관
-        // Routes = await transport.getPublicTransport(127.0964, 37.1986, 126.96, 37.4946, stime) // 동탄 ->정보관
-        Routes = await transport.getPublicTransport(127.7277, 37.881, 126.96, 37.4946, stime) // 춘천 ->정보관
+        Routes = await transport.getPublicTransport(resource.start_lon, resource.start_lat, resource.end_lon, resource.end_lat, stime)
+
         if (Routes.length < 1) {
             //경로없음
             res.send("경로없음");
@@ -68,6 +85,7 @@ app.get('/main/POI', async (req, res) => {
                 } else {
                     const dynamicRoutes = Routes.map((Route) => {
                         const sectionsHtml = Route.sections.map(section => {
+
                             const vehicleHtml = section => {
                                 let vehicleIcon = '';
                                 let additionalHtml = '';
@@ -126,7 +144,6 @@ app.get('/main/POI', async (req, res) => {
                                         </div>
                                 `;
                             };
-                            
                             return vehicleHtml(section);
                         }).join('');
                             
@@ -141,8 +158,10 @@ app.get('/main/POI', async (req, res) => {
                             <div class="route-list__bookmark">
                                 <i class="fa-regular fa-star fa-xl"></i>
                             </div>
-                        </div>    
-                            ${sectionsHtml}
+                        </div>
+                        <div class="route-list__vehicle">${resource.start}</div>
+                        ${sectionsHtml}
+                        <div class="route-list__vehicle">${resource.end}</div>    
                         </div>`;
                     }).join('');
 
