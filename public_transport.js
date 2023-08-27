@@ -1,7 +1,6 @@
 const convert = require('./convert_XY.js');
 const fetch = require('node-fetch');
-// totalWalkDistance
-// totalWalkTime
+
 const routeColorMap = {
     '수도권1호선': '#0052A4',
     '수도권1호선(급행)': '#0052A4',
@@ -179,7 +178,7 @@ async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
                         section.mode = 'WALK';
                     } else if (method[cur_section].mode === 'BUS') {
                         section.mode = `${method[cur_section].mode}`; // 이동수단
-                        section.route_name = extractNumbersFromString(`${method[cur_section].route}`); // 노선 이름
+                        section.route_name = `${method[cur_section].route}`.match(/[-\d]+/g); // 노선 이름
                         section.route_color = `#${method[cur_section].routeColor}`; // 노선 색
                         section.stationcount = `${method[cur_section].passStopList.stationList.length-1}개 역 이동`; // 지나가는 정류장 수
                     }
