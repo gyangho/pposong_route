@@ -5,16 +5,11 @@
 	<meta charset="UTF-8">
 	<title>MainFuncPage</title>
 	<link rel="stylesheet" href="/css/mainFunc-style.css">
-	<script defer src="/js/mainFunc.js"></script>
-	<!-- <script defer src="../POI.js"></script> -->
-
-	<!-- <script src="/js/data.js"></script> -->
-
+	
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>	
 	<script src="jquery.ui.autocomplete.scroll.js"></script>
-
 </head>
 
 <body>
@@ -102,18 +97,20 @@
 		</div>
 	</div>
 	
-	<script>
+	<script type="module">
+		import {GetPOI} from '../js/mainFunc.js';
+		
 		function initAutocomplete(inputElement, latitude, longitude){
 			$(inputElement).autocomplete({
 				source: async function (request, response){
-					const places = await getPlacesFromInput(request.term);
+					const places = await GetPOI(request.term);
 					const placesData = places.map(place =>({
-						label: place.name,
-						value: place.name,
-						name: place.name,
-						address: place.address,
-						lat: place.lat,
-						lon: place.lon
+						label: place.Name,
+						value: place.Name,
+						name: place.Name,
+						address: place.Address,
+						lat: place.Lat,
+						lon: place.Lon
 					}));
 					response(placesData);	
 				},
@@ -129,10 +126,8 @@
 				select: function (event, ui) {
 					console.log(ui.item.name);
 					console.log(ui.item.address);
-					lat = ui.item.lat;
-					lon = ui.item.lon;
-					latitude.value = lat;
-					longitude.value = lon;
+					latitude.value = ui.item.lat;
+					longitude.value = ui.item.lon;
 				},
 				focus: function (event, ui) {
 					return false;
@@ -160,6 +155,5 @@
 
 		initAutocomplete(inputField, startLatField, startLonField);
 		initAutocomplete(inputField2, endLatField, endLonField);
-
 	</script>
 </body>
