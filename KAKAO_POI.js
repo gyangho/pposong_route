@@ -1,5 +1,9 @@
-import axios from 'https://cdn.jsdelivr.net/npm/axios@1.3.5/+esm';
-import { dfs_xy_conv } from './convert_XY.js';
+const axios = require('axios');
+const convert = require('./convert_XY');
+
+const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 class Place{
   constructor(Name, Address, X, Y, Lat, Lon) {
@@ -12,11 +16,11 @@ class Place{
   }
 }
 
-export async function GetPOI(input) {
+async function GetPOI(input) {
   const url = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(input)}`;
   const config = {
     headers: {
-          'Authorization': `KakaoAK <KAKAO_REST_KEY입력>`
+      'Authorization': `KakaoAK ${process.env.KAKAO_REST_KEY}`,
     },
   };
 
@@ -25,7 +29,7 @@ export async function GetPOI(input) {
     if (response.status == 200) {
       const Places = [];
       response.data.documents.forEach(place => {
-        const location = dfs_xy_conv("toXY", place.y, place.x);
+        const location = convert.dfs_xy_conv("toXY", place.y, place.x);
         const aPlace = new Place(place.place_name, place.address_name, location.x, location.y, location.lat, location.lon);
         Places.push(aPlace);
       });
@@ -46,3 +50,7 @@ export async function GetPOI(input) {
       console.error(`오류 발생 : ${err.message}`);
   }
 }
+
+module.exports = {
+  GetPOI: GetPOI
+};
