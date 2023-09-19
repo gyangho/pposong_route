@@ -119,59 +119,56 @@ async function GetRoot(startX, startY, endX, endY) {
 
   try {
     const response = await axios.get(url);
-    if (response.data && response.data.error)
-      throw new Error('ODsay 대중교통 API 오류 발생 --> code: ' + response.data.error.msg);
-    if (response.data.error)
-      throw new Error('ODsay 대중교통 API 오류 발생 --> code : ' + response.data.error[0].code + ', message : ' + response.data.error[0].message);
+    if (response.status == 200) {
+      const Paths = [];
 
-    const ODsay_result = response.data.result;
-    const Paths = []
-
-    for (var path_idx = 0; path_idx < ODsay_result.path.length; path_idx++) {
-        const path = ODsay_result.path[path_idx];
+      response.data.result.path.forEach(path => {
         var TotalWalkTime = 0;
         const SubPaths = [];
-
-        for (var subpath_idx = 0; subpath_idx < path.subPath.length; subpath_idx++) {
-            const subpath = path.subPath[subpath_idx];
-            let SubPath;
-
-            switch (subpath.trafficType) {
-                case 1: // 지하철
-                    var { start, end } = convert.ToXY(subpath.startY, subpath.startX, subpath.endY, subpath.endX);
-                    const SubwayColor = SubwayColorMap[subpath.lane[0].name] || '#000000';
-                    SubPath = new Subway(subpath.sectionTime, subpath.stationCount, start.x, start.y, end.x, end.y, subpath.startName, subpath.endName, subpath.lane[0].name, SubwayColor);
-                    break;
-                case 2: // 버스
-                    var { start, end } = convert.ToXY(subpath.startY, subpath.startX, subpath.endY, subpath.endX);
-                    const LaneInfo = subpath.lane.map(lane => ({
-                        BusNo: lane.busNo,
-                        BusID: lane.busID,
-                        BusColor: BusColorMap[lane.type] || '#000000'
-                    }));
-                    SubPath = new Bus(subpath.sectionTime, subpath.stationCount, start.x, start.y, end.x, end.y, subpath.startName, subpath.endName, LaneInfo);
-                    break;
-                case 3: // 도보
-                    SubPath = new Walk(subpath.sectionTime, subpath.distance);
-                    TotalWalkTime += subpath.sectionTime;
-                    break;
-                default:
+        path.subPath.forEach(subpath => {
+          let SubPath;
+          switch (subpath.trafficType) {
+            case 1: // 지하철
+              var { start, end } = convert.ToXY(subpath.startY, subpath.startX, subpath.endY, subpath.endX);
+              const SubwayColor = SubwayColorMap[subpath.lane[0].name] || '#000000';
+              SubPath = new Subway(subpath.sectionTime, subpath.stationCount, start.x, start.y, end.x, end.y, subpath.startName, subpath.endName, subpath.lane[0].name, SubwayColor);
+              break;
+            case 2: // 버스
+              var { start, end } = convert.ToXY(subpath.startY, subpath.startX, subpath.endY, subpath.endX);
+              const LaneInfo = subpath.lane.map(lane => ({
+                BusNo: lane.busNo,
+                BusID : lane.busID,
+                BusColor : BusColorMap[lane.type] || '#000000'
+              }));
+              SubPath = new Bus(subpath.sectionTime, subpath.stationCount, start.x, start.y, end.x, end.y, subpath.startName, subpath.endName, LaneInfo);
+            break;
+            case 3: // 도보
+              SubPath = new Walk(subpath.sectionTime, subpath.distance);
+              TotalWalkTime += subpath.sectionTime;
+              break;
+            default:
                     // 다른 교통 수단
-                    break;
-            }
-            SubPaths.push(SubPath);
-        }
-
+              break;
+          }
+          SubPaths.push(SubPath);
+        });     
         // 출발지, 도착지 위경도 --> X Y로 변환
         var { start, end } = convert.ToXY(startY, startX, endY, endX);
         const p = new Path(start, end, path.info.payment, path.info.totalTime, path.info.totalWalk, TotalWalkTime, SubPaths);
-
         Paths.push(p);
+      });
+      return Paths;
     }
-    return Paths;
-      
+    else {
+      console.error(`HTTP 요청 실패, 상태 코드 : ${response.status}`);
+    }
   } catch (err) {
-    console.error(err);
+    if (err.response) {
+      console.error(`HTTP 요청 실패, 상태 코드 : ${response.status}`);
+    } else if (err.request) {
+      console.error(`네트워크 문제 : ${err.message}`);
+    } else
+      console.error(`오류 발생 : ${err.message}`);
   }
 }
 
