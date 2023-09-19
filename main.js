@@ -4,11 +4,10 @@ const transport = require('./public_transport.js');
 const fs = require('fs');
 const fs2 = require('fs').promises;
 const bodyParser = require('body-parser');
+const path = require('path');
 const url = require('url');
 const { resourceUsage } = require('process');
-const path = require('path');
-const dotenv = require('dotenv');
-dotenv.config({ path: path.resolve(__dirname, ".env") });
+// var POI = require('./POI.js');
 
 const app = express();
 const port = 1521;
@@ -176,6 +175,5 @@ app.get('/main/POI/result', async (req, res) => {
         console.error('파일 읽기 에러:', err);
     }
 });
-
 
 https.createServer(options, app).listen(port);
