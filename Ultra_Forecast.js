@@ -2,27 +2,14 @@
 // 기온(T1H), 1시간 강수량(RN1), 하늘 상태(SKY), 습도(REH), 강수형태(PTY), 풍속(WSD)
 
 const { response } = require('express');
-const fetch = require('node-fetch');
 const calculate = require('./cal_time_date.js');
 
-const serviceKey = 'YVQkpHY14ykgf2l2ayZx+wOfqTGaLVjka0T1pl7g4PsQuB6cGA/wrf5j8AT9dKraniz5z8rTowBF2RM0W+8jkg==';
-const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst'; // 초단기예보 URL
-const url2 = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst';// 초단기실황 URL
+const axios = require('axios');
+const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-function fetch_ultra_forecast_data(queryParams) {   // 초단기예보
-    return fetch(url + '?' + queryParams)
-        .then(response => response.json())
-        .then(data => data.response.body.items.item)
-        .catch(error => console.error(error));
-}
-function fetch_ultra_nowcast_data(prevQueryParams) {    // 초단기실황
-    return fetch(url2 + '?' + prevQueryParams)
-        .then(response => response.json())
-        .then(data => data.response.body.items.item)
-        .catch(error => console.error(error));
-}
-
-async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y) {
+ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y) {
     let {
         cur_time,
         cur_base_time,  //  input_time과 가장 가까운 base_time
@@ -32,21 +19,23 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
     const cur_base_time_str = cur_base_time.toString().padStart(4, '0');
 
     const queryParams = new URLSearchParams({
-        serviceKey,
-        pageNo: '1',
-        numOfRows: '1000',
+        serviceKey: `${process.env.PUBLIC_KEY}`,
+        numOfRows: '100',
         dataType: 'JSON',
         base_date: prev_base_date,
         base_time: cur_base_time_str,
         nx: input_x,
         ny: input_y
     });
+    const f_url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst'; // 초단기예보 URL
+    const n_url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst';// 초단기실황 URL
 
     // 초단기예측 6시간 결과
     // 1100 ~ 1144 --> 초단기예측(base_time : 1000) --> 11, 12, 13, 14, 15, 16
     // 1200 ~ 1244 --> 초단기예측(base_time : 1100) --> 12, 13, 14, 15, 16, 17
-    if (input_time % 100 < 45) {    // (1, 3)
-        const items = await fetch_ultra_forecast_data(queryParams);
+    if (input_time % 100 < 45) {
+        const f_response = await axios.get(f_url, { params: queryParams });
+        const items = f_response.data.response.body.items.item;
         const ultra_forecast_datas = [];
         let next_time = cur_time;
         let check = 0, check2 = 0;
@@ -65,6 +54,12 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                     if (category === 'RN1') {
                         if (fcstValue === '강수없음')
                             existingData[category] = 0;
+                        else if (fcstValue === '1.0mm 미만')
+                            existingData[category] = 1;
+                        else if (fcstValue === '30.0~50.0mm')
+                            existingData[category] = 30;
+                        else if (fcstValue === '50.0mm 이상')
+                            existingData[category] = 50;    
                         else
                             existingData[category] = fcstValue;
                     } else {
@@ -79,11 +74,17 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                     const data = { Date: prev_base_date, Time: fcstTime, X: input_x, Y: input_y };
                     if (category === 'RN1') {
                         if (fcstValue === '강수없음')
-                            data[category] = 0;
+                            existingData[category] = 0;
+                        else if (fcstValue === '1.0mm 미만')
+                            existingData[category] = 1;
+                        else if (fcstValue === '30.0~50.0mm')
+                            existingData[category] = 30;
+                        else if (fcstValue === '50.0mm 이상')
+                            existingData[category] = 50;    
                         else
-                            data[category] = fcstValue;
+                            existingData[category] = fcstValue;
                     } else {
-                        data[category] = fcstValue;
+                        existingData[category] = fcstValue;
                     }
                     ultra_forecast_datas.push(data);
                 }
@@ -129,10 +130,9 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
         // 초단기실황 API제공시간 : 1시간 주기로 매 45분 --> time_to_add를 55, time_to_divide를 100으로 한다.
         const cur_base_time_str = cur_base_time.toString().padStart(4, '0');
 
-        const prevQueryParams = new URLSearchParams({
-            serviceKey,
-            pageNo: '1',
-            numOfRows: '1000',
+        const prevqueryParams = new URLSearchParams({
+            serviceKey: `${process.env.PUBLIC_KEY}`,
+            numOfRows: '20',
             dataType: 'JSON',
             base_date: cur_base_date,
             base_time: cur_base_time_str,
@@ -140,16 +140,22 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
             ny: input_y
         });
 
-        //초단기실황 1개
-        const ultra_nowcast_data = await fetch_ultra_nowcast_data(prevQueryParams);
-        const items = ultra_nowcast_data;
+        const n_response = await axios.get(n_url, { params: prevqueryParams });
+        const items = n_response.data.response.body.items.item;
         const ultra_forecast_datas = [];
+
         let t1h, rn1, reh, wsd;
         items.forEach(item => {
             // 기온(T1H), 1시간 강수량(RN1), 습도(REH), 풍속(WSD)
             if (item.category === "RN1") {
-                if (item.obsrValue === '강수없음')   // 강수없음 --> 0
+                if (item.obsrValue === '강수없음')
                     rn1 = 0;
+                else if (item.obserValue === '1.0mm 미만')
+                    rn1 = 1;
+                else if (item.obserValue === '30.0~50.0mm')
+                    rn1 = 30;
+                else if (item.obserValue === '50.0mm 이상')
+                    rn1 = 50;
                 else
                     rn1 = parseFloat(item.obsrValue);
             }
@@ -162,9 +168,8 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
         });
         ultra_forecast_datas.push({ Date: parseInt(cur_base_date), Time: cur_base_time_str, X: input_x, Y: input_y, RN1: rn1, T1H: t1h, REH: reh, WSD: wsd });
 
-        // 초단기예보 5개
-        const ultra_forecast_data = await fetch_ultra_forecast_data(queryParams);
-        const items2 = ultra_forecast_data;
+        const f_response = await axios.get(f_url, { params: queryParams });
+        const items2 = f_response.data.response.body.items.item;
 
         cur_time = next_time;
         let check = 0;
@@ -183,6 +188,12 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                     if (category === 'RN1') {
                         if (fcstValue === '강수없음')
                             existingData[category] = 0;
+                        else if (fcstValue === '1.0mm 미만')
+                            existingData[category] = 1;
+                        else if (fcstValue === '30.0~50.0mm')
+                            existingData[category] = 30;
+                        else if (fcstValue === '50.0mm 이상')
+                            existingData[category] = 50;    
                         else
                             existingData[category] = fcstValue;
                     } else {
@@ -194,6 +205,12 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                     if (category === 'RN1') {
                         if (fcstValue === '강수없음')
                             data[category] = 0;
+                        else if (fcstValue === '1.0mm 미만')
+                            data[category] = 1;
+                        else if (fcstValue === '30.0~50.0mm')
+                            data[category] = 30;
+                        else if (fcstValue === '50.0mm 이상')
+                            data[category] = 50;    
                         else
                             data[category] = fcstValue;
                     } else {
@@ -202,7 +219,7 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                     ultra_forecast_datas.push(data);
                 }
                 check++;
-                if (check == 6) {
+                if (check == 5) {
                     next_time = cur_time;
                     if (next_time == 2400) {
                         next_time = 0;
@@ -235,8 +252,8 @@ module.exports = {
 };
 
 // 사용 예시
-const input_date = '20230729'
-const input_time = '0015';
+const input_date = '20231027'
+const input_time = '1352';
 const input_x = 59;
 const input_y = 125;
 // const input_x = '64';
