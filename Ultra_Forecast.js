@@ -74,17 +74,17 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
                     const data = { Date: prev_base_date, Time: fcstTime, X: input_x, Y: input_y };
                     if (category === 'RN1') {
                         if (fcstValue === '강수없음')
-                            existingData[category] = 0;
+                            data[category] = 0;
                         else if (fcstValue === '1.0mm 미만')
-                            existingData[category] = 1;
+                            data[category] = 1; 
                         else if (fcstValue === '30.0~50.0mm')
-                            existingData[category] = 30;
+                            data[category] = 30;
                         else if (fcstValue === '50.0mm 이상')
-                            existingData[category] = 50;    
+                            data[category] = 50;
                         else
-                            existingData[category] = fcstValue;
+                            data[category] = fcstValue;
                     } else {
-                        existingData[category] = fcstValue;
+                        data[category] = fcstValue;
                     }
                     ultra_forecast_datas.push(data);
                 }
@@ -252,8 +252,8 @@ module.exports = {
 };
 
 // 사용 예시
-const input_date = '20231027'
-const input_time = '1352';
+const input_date = '20231029'
+const input_time = '1502';
 const input_x = 59;
 const input_y = 125;
 // const input_x = '64';
