@@ -7,10 +7,20 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const url = require('url');
 const { resourceUsage } = require('process');
-// var POI = require('./POI.js');
+const schedule = require('node-schedule')
+const forecast = require('./Ultra_Forecast.js')
+var db = require('./db');
 
 const app = express();
 const port = 1521;
+var locArr = [
+    [60, 127], [61, 127], [60, 126], [59, 126], [61, 126],
+    [62, 126], [62, 127], [62, 128], [60, 128], [61, 128],
+    [61, 129], [62, 129], [59, 127], [59, 128], [58, 127],
+    [58, 126], [57, 126], [58, 125], [57, 127], [57, 125],
+    [59, 124], [59, 125], [58, 124], [60, 125], [61, 125],
+    [61, 124], [62, 125], [63, 125], [63, 126], [63, 127]
+];
 
 //날짜, 시간 구하기
 function getTimeStamp(i) {
@@ -176,4 +186,54 @@ app.get('/main/POI/result', async (req, res) => {
     }
 });
 
-https.createServer(options, app).listen(port);
+const httpsServer = https.createServer(options, app);
+
+httpsServer.listen(port, () => {
+    console.log(`Example app listening on port ${port}`);
+    schedule.scheduleJob('0 0,10,20,30,40,50 * * * *', async function () {
+        console.log('Forecast Updating Started....');
+        const input_date = getTimeStamp(1);
+        const input_time = getTimeStamp(2);
+        const promises = [];
+
+        for (let i = 0; i < 30; i++) {
+            try {
+                const input_x = locArr[i][0];
+                const input_y = locArr[i][1];
+
+                var Data = forecast.get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y);
+                console.log(i + 1, Data);
+            
+                promises.push(Data);
+            }
+            catch (error) {
+                console.log("ERROR MERGED");
+                console.error(error);
+                i--;
+            };
+        }
+        const ultra_forecast_datas = await Promise.all(promises);
+        console.log("Promise End");
+        console.log(ultra_forecast_datas);
+        
+        for (let i = 0; i < 30; i++) {
+            for (let j = 0; j < 6; j++) {
+                try {
+                    db.query('INSERT INTO foreCast (DATE, TIME, X, Y, RN1, T1H, REH, WSD, UPTIME) VALUES(?,?,?,?,?,?,?,?,?)', [ultra_forecast_datas[i][j].Date, ultra_forecast_datas[i][j].Time, ultra_forecast_datas[i][j].X,  ultra_forecast_datas[i][j].Y, ultra_forecast_datas[i][j].RN1, ultra_forecast_datas[i][j].T1H, ultra_forecast_datas[i][j].REH, ultra_forecast_datas[i][j].WSD, input_time],
+                    await function (error, results, fields) {
+                        if (error) throw error;
+                    });
+                }
+                catch (error) {
+                    console.error(error);
+                }
+            }
+        }
+
+        db.query('DELETE FROM FORECAST WHERE UPTIME != ?', [input_time],
+            await function (error, results, fields) {
+                if (error) throw error;
+            });
+        console.log("DONE!");
+    });
+})
