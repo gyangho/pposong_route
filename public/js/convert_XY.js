@@ -19,7 +19,7 @@ var YO = 136; // 기1준점 Y좌표(GRID)
 //
 
 
-function dfs_xy_conv(code, v1, v2) {
+export function dfs_xy_conv(code, v1, v2) {
     var DEGRAD = Math.PI / 180.0;
     var RADDEG = 180.0 / Math.PI;
 
@@ -75,13 +75,8 @@ function dfs_xy_conv(code, v1, v2) {
     return rs;
 }
 
-function ToXY(startY, startX, endY, endX) {
+export function ToXY(startY, startX, endY, endX) {
     const start = dfs_xy_conv('toXY', startY, startX);
     const end = dfs_xy_conv('toXY', endY, endX);
     return { start, end };
 }
-  
-module.exports = {
-    dfs_xy_conv: dfs_xy_conv,
-    ToXY:ToXY
-};

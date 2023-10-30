@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>MainFuncPage</title>
+	<link rel="stylesheet" href="/css/mainFunc-style.css">
+	
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>	
+	<script src="jquery.ui.autocomplete.scroll.js"></script>
+</head>
+
+<body>
+	<div class="status-bar">
+		<div class="status-bar__column">
+			<span>PPOSONG</span>
+			<img src="/image/20.png" style="color: #9fd8f6;">
+		</div>
+
+		<div class="status-bar__column">
+			<span>ver 0.5.1</span>
+		</div>
+
+	</div>
+	<header class="alt-header">
+		<div class="alt-header__column">
+			<a href="#" , onclick="window.history.back()"><!--이전 페이지로 이동하는 링크-->
+				<img src="/image/17.png">
+			</a>
+		</div>
+		<div class="alt-header__column">
+			<h1 class="alt-header__title">경로검색</h1>
+		</div>
+		<div class="alt-header__column">
+			<nav class="screen-header__menu">
+				<ul class="screen-header__menu-list">
+					<li class="screen-header__menu-btn">
+						<a class="screen-header__menu-link" href="/main"><img src="/image/18.png"></a><!--홈으로 이동하는 링크-->
+					</li>
+					<li class="screen-header__menu-btn">
+						<a class="screen-header__menu-link" href="/main/mypage"><img
+								src="/image/19.png"></a><!--마이페이지로 이동하는 링크-->
+					</li>
+				</ul>
+			</nav>
+		</div>
+		</div>
+	</header>
+
+	<div id="search">
+		<p>Search for pposong-gil</p>
+		<form id="search-form" action="/main/POI/result" method="get">
+			<input type=text name="start" id="start-field" class="search-form-field" placeholder="출발지를 입력하세요"
+				autocomplete="off">
+			<input type="hidden" name="start_lat" id="start-lat">
+			<input type="hidden" name="start_lon" id="start-lon">
+
+			<input type=text name="end" id="end-field" class="search-form-field" placeholder="도착지를 입력하세요"
+				autocomplete="off">
+			<input type="hidden" name="end_lat" id="end-lat">
+			<input type="hidden" name="end_lon" id="end-lon">
+
+			<input type="submit" value="길찾기" id="search-form-submit"
+				onclick="location.href='/main/POI/result'"><!--길찾기 검색결과로 넘어가는 링크-->
+		</form>
+
+	</div>
+	
+	<hr size="3" noshade>
+	<div id="bookmark">
+		<div class="word">Bookmark<img src="/image/12.png"
+				style="width: 55px; height:55px; top:7px; left:2px; position:relative;">
+		</div>
+		<div class="list">
+			<div class="item" style="cursor: pointer;"><img src="/image/10.png">스타벅스 남성역점 -> 숭실대학교 정보과학관
+				<div>
+					<img src="/image/11.png"
+						style="width:40px; height: 40px; left:50px; top:3px;position: relative;"><a>752</a>
+				</div>
+			</div>
+			<hr color="#f6ee96">
+
+			<!--제가 여기 북마크 두번째거 선택하면 아영님이 만든 (신반포역-정보과학관)결과 페이지로 넘어갈 수 있게 만들었습니다-->
+			<!--시연 영상에서 북마크 두번째거 눌러서 구현되는거 보여주면 좋을 거 같아욤-->
+			<div class="item" style="cursor: pointer;" onclick="post요청보내기('/main/POI/result/pposongtime1','{{R}}')">
+				<!--여기 링크 pposongtime.html로 넘어가야해요--><img src="/image/10.png">9호선 신반포역 -> 숭실대학교 정보과학관
+				<div>
+					<img src="/image/11.png"
+						style="width:40px; height: 40px; left:50px; top:3px;position: relative;"><a>540,643> </a><img
+						src="/image/11.png"
+						style="width:40px; height: 40px; left:50px; top:3px;position: relative;"><a>752</a>
+				</div>
+			</div>
+			<hr color="#f6ee96">
+		</div>
+	</div>
+	
+	<script type="module">
+		import {GetPOI} from '../js/mainFunc.js';
+		
+		function initAutocomplete(inputElement, latitude, longitude){
+			$(inputElement).autocomplete({
+				source: async function (request, response){
+					const places = await GetPOI(request.term);
+					const placesData = places.map(place =>({
+						label: place.Name,
+						value: place.Name,
+						name: place.Name,
+						address: place.Address,
+						lat: place.Lat,
+						lon: place.Lon
+					}));
+					response(placesData);	
+				},
+				open: function (event, ui) {
+					const menu = $(this).autocomplete('widget');
+					const maxHeight = 400;  
+					const fieldWidth = $(this).outerWidth();
+					menu.width(fieldWidth);
+					menu.css('max-height', maxHeight + 'px');
+					menu.css('overflow-y', 'auto');
+					menu.css('overflow-x', 'hidden');
+				},
+				select: function (event, ui) {
+					console.log(ui.item.name);
+					console.log(ui.item.address);
+					latitude.value = ui.item.lat;
+					longitude.value = ui.item.lon;
+				},
+				focus: function (event, ui) {
+					return false;
+				},
+				minLength: 1,
+				delay: 50,
+				close: function (event, ui) {
+					autocompleteIsOpen = false;
+					console.log(event);
+				},
+			}).autocomplete("instance")._renderItem = function (ul, item) {
+				return $("<li>")
+					.append(`<div class=h>${item.name}<br>
+						<span style="font-size: 30px; color: gray;">${item.address}</span></div>`)
+					.appendTo(ul);
+			};
+		}
+	
+		const inputField = document.getElementById('start-field');
+		const inputField2 = document.getElementById('end-field');
+		const startLatField = document.getElementById('start-lat');
+        const startLonField = document.getElementById('start-lon');
+        const endLatField = document.getElementById('end-lat');
+        const endLonField = document.getElementById('end-lon');
+
+		initAutocomplete(inputField, startLatField, startLonField);
+		initAutocomplete(inputField2, endLatField, endLonField);
+	</script>
+</body>
