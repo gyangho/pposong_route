@@ -43,7 +43,7 @@ function fill_newData(data, category, fcstValue) {
     }
 }
 
-function fill_nowCast(items, ultra_forecast_datas, cur_base_date, cur_base_time_str, input_x, input_y) {
+async function fill_nowCast(items, ultra_forecast_datas, cur_base_date, cur_base_time_str, input_x, input_y) {
     let t1h, rn1, reh, wsd;
     items.forEach(item => {
         // 기온(T1H), 1시간 강수량(RN1), 습도(REH), 풍속(WSD)
@@ -67,6 +67,14 @@ function fill_nowCast(items, ultra_forecast_datas, cur_base_date, cur_base_time_
             wsd = item.obsrValue;
     });
     ultra_forecast_datas.push({ Date: parseInt(cur_base_date), Time: cur_base_time_str, X: input_x, Y: input_y, RN1: rn1, T1H: t1h, REH: reh, WSD: wsd });
+}
+
+function get_nextBasedate(next_time, prev_base_date) {
+    if (next_time == 2400) {
+        next_time = 0;
+        prev_base_date = calculate.get_next_basedate(prev_base_date);
+    }
+
 }
 
 async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y) {
@@ -126,36 +134,26 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                         check++;
                         if (check == 6) {
                             next_time = cur_time;
-                            if (next_time == 2400) {
-                                next_time = 0;
-                                prev_base_date = calculate.get_next_basedate(prev_base_date);
-                            }
+                            get_nextBasedate(next_time, prev_base_date);
                             check = 0;
                         }
                         else {
                             next_time += 100; // 100 분을 더해서 다음 시간으로 이동
-                            if (next_time == 2400) {
-                                next_time = 0;
-                                prev_base_date = calculate.get_next_basedate(prev_base_date);
-                            }
+                            get_nextBasedate(next_time, prev_base_date);
                         }
                     } else {
                         next_time = cur_time;
-                        if (next_time == 2400) {
-                            next_time = 0;
-                            prev_base_date = calculate.get_next_basedate(prev_base_date);
-                        }
+                        get_nextBasedate(next_time, prev_base_date);
                         check = 0;
                     }
                 }
                 return ultra_forecast_datas;
             } catch (error) {
-                console.error(attempt + "Attempt failed", error);
-                if (attempt >= maxAttempts)
-                    console.error("Max attempts 초과");
+                console.error(`forecast[${input_x}][${input_y}] Attempt[${attempt}] failed`, error);
+                if (attempt >= maxAttempts-1)
+                    console.error("forecast[${input_x}][${input_y}] Max attempts 초과");
             }
         }
-    
     }
 
     // 초단기실황 결과 1개 + 초단기예측 결과 5개
@@ -181,17 +179,18 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
             nx: input_x,
             ny: input_y
         });
+        const ultra_forecast_datas = [];
 
         for (let attempt = 0; attempt < maxAttempts; attempt++) { // 오류 발생시 try catch로 초단기실황API 최대 3번 재호출
             try {
                 const n_response = await axios.get(n_url, { params: prevqueryParams });
                 const items = n_response.data.response.body.items.item;
-                fill_nowCast(items, ultra_forecast_datas, cur_base_date, cur_base_time_str, input_x, input_y);
+                await fill_nowCast(items, ultra_forecast_datas, cur_base_date, cur_base_time_str, input_x, input_y);
                 break;
             } catch (error) {
-                console.error(attempt + "Attempt failed", error);
-                if (attempt >= maxAttempts) {
-                    console.error("Max attempts 초과");
+                console.error(`nowcast[${input_x}][${input_y}] Attempt[${attempt}] failed`, error);
+                if (attempt >= maxAttempts-1) {
+                    console.error("nowcast[${input_x}][${input_y}] Max attempts 초과");
                 }
             }
         }
@@ -226,33 +225,24 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                         check++;
                         if (check == 5) {   // 초단기실황 정보가 있으니 5번만 반복
                             next_time = cur_time;
-                            if (next_time == 2400) {
-                                next_time = 0;
-                                prev_base_date = calculate.get_next_basedate(prev_base_date);
-                            }
+                            get_nextBasedate(next_time, prev_base_date)
                             check = 0;
                         }
                         else {
                             next_time += 100; // 100 분을 더해서 다음 시간으로 이동
-                            if (next_time == 2400) {
-                                next_time = 0;
-                                prev_base_date = calculate.get_next_basedate(prev_base_date);
-                            }
+                            get_nextBasedate(next_time, prev_base_date)
                         }
                     } else {
                         next_time = cur_time;
-                        if (next_time == 2400) {
-                            next_time = 0;
-                            prev_base_date = calculate.get_next_basedate(prev_base_date);
-                        }
+                        get_nextBasedate(next_time, prev_base_date)
                         check = 0;
                     }
                 }
                 return ultra_forecast_datas;
             } catch (error) {
-                console.error(attempt + "Attempt failed", error);
-                if (attempt >= maxAttempts)
-                    console.error("Max attempts 초과");
+                console.error(`forecast[${input_x}][${input_y}] Attempt[${attempt}] failed`, error);
+                if (attempt >= maxAttempts-1)
+                    console.error("forecast[${input_x}][${input_y}] Max attempts 초과");
             }
         }
     }
