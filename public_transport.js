@@ -1,133 +1,177 @@
-const convert = require('./convert_XY.js');
-const fetch = require('node-fetch');
+const axios = require('axios');
+const convert = require('./convert_XY');
 
-async function getPublicTransport(startX, startY, endX, endY, searchDttm) {
-    const options = {
-        method: 'POST',
-        headers: {
-            accept: 'application/json',
-            'content-type': 'application/json',
-            appKey: 'e8wHh2tya84M88aReEpXCa5XTQf3xgo01aZG39k5',
-        },
-        body: JSON.stringify({
-            startX: startX,
-            startY: startY,
-            endX: endX,
-            endY: endY,
-            lang: 0,
-            format: 'json',
-            count: 5,
-            searchDttm: searchDttm,
-        }),
-    };
+const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
+const SubwayColorMap = {
+    '수도권 1호선': '#0052A4',
+    '수도권 1호선(급행)': '#0052A4',
+    '수도권 1호선(특급)': '#0052A4',
+    '수도권 2호선': '#00A84D',
+    '수도권 3호선': '#EF7C1C',
+    '수도권 4호선': '#00A5DE',
+    '수도권 4호선(급행)': '#00A5DE',
+    '수도권 5호선': '#996CAC',
+    '수도권 6호선': '#CD7C2F',
+    '수도권 7호선': '#747F00',
+    '수도권 8호선': '#E6186C',
+    '수도권 9호선': '#BDB092',
+    '수도권 9호선(급행)': '#BDB092',
+    '수도권 수인.분당선': '#F5A200',
+    '수도권 수인.분당선(급행)': '#F5A200',
+    '수도권 신분당선': '#D31145',
+    '수도권 공항철도': '#0090D2',
+    '수도권 서해선': '#8FC31F',
+    '경의중앙선': '#77C4A3',
+    '경의중앙선(급행)': '#77C4A3',
+    '수도권 에버라인': '#56AD2D',
+    '수도권 경춘선': '#0C8E72',
+    '경춘선(급행)': '#0C8E72',
+    '수도권 의정부경전철': '#FDA600',
+    '수도권 경강선': '#0054A6',
+    '수도권 우이신설선': '#B0CE18',
+    '수도권 서해선': '#81A914',
+    '수도권 김포골드라인': '#A17800',
+    '수도권 신림선': '#6789CA',
+    '인천 1호선': '#7CA8D5',
+    '인천 2호선': '#ED8B00',
+    '대전 1호선': '#007448',
+    '대구 1호선': '#D93F5C',
+    '대구 2호선': '#00AA80',
+    '대구 3호선': '#FFB100',
+    '광주 1호선': '#009088',
+    '부산 1호선': '#F06A00',
+    '부산 2호선': '#81BF48',
+    '부산 3호선': '#BB8C00',
+    '부산 4호선': '#217DCB',
+    '부산-김해경전철': '#8652A1',
+};
 
-    try {
-        const response = await fetch('https://apis.openapi.sk.com/transit/routes', options);
-        const road_data = await response.json();
+const BusColorMap = {
+    '1': '#33CC99',  // 시내일반
+    '3': '#53b332',  // 지선
+    '4': '#e60012',  // 광역
+    '11': '#0068b7',  // 간선
+    '12': '#53b332',  // 지선
+    '14': '#e60012',  // 광역
+    '15': '#e60012'   // 광역
+};
 
-        if (
-            road_data.metaData &&
-            road_data.metaData.plan &&
-            road_data.metaData.plan.itineraries &&
-            road_data.metaData.plan.itineraries.length > 0
-        ) {
-            const start_lat = road_data.metaData.requestParameters.startY;
-            const start_lon = road_data.metaData.requestParameters.startX;
-            const starting_point = convert.dfs_xy_conv('toXY', `${start_lat}`, `${start_lon}`); // 출발지 위경도 --> XY
-
-            const end_lat = road_data.metaData.requestParameters.endY;
-            const end_lon = road_data.metaData.requestParameters.endX;
-            const end_point = convert.dfs_xy_conv('toXY', `${end_lat}`, `${end_lon}`); // 목적지 위경도 --> XY
-
-            const itinerary = road_data.metaData.plan.itineraries;
-            const itinerary_count = itinerary.length; // 루트 개수
-            const Routes = []; // 구간 객체배열
-
-            // 루트 개수만큼 반복(5번)
-            for (let cur_itinerary = 0; cur_itinerary < itinerary_count; cur_itinerary++) {
-                const totalTime = itinerary[cur_itinerary].totalTime;
-                const transferCount = itinerary[cur_itinerary].transferCount;
-                const method = itinerary[cur_itinerary].legs;
-                const section_Count = method.length;
-                const sections = []; // 구간 객체배열
-
-                // 구간 개수만큼 반복
-                for (let cur_section = 0; cur_section < section_Count; cur_section++) {
-                    const section_start_name = method[cur_section].start.name;
-                    const section_start_lat = method[cur_section].start.lat;
-                    const section_start_lon = method[cur_section].start.lon;
-                    const section_start = convert.dfs_xy_conv('toXY', `${section_start_lat}`, `${section_start_lon}`); // 구간의 출발지 위경도 --> XY
-
-                    const section_end_name = method[cur_section].end.name;
-                    const section_end_lat = method[cur_section].end.lat;
-                    const section_end_lon = method[cur_section].end.lon;
-                    const section_end = convert.dfs_xy_conv('toXY', `${section_end_lat}`, `${section_end_lon}`); // 구간의 목적지 위경도 --> XY
-
-                    const sectionTime = method[cur_section].sectionTime;
-                    const distance = method[cur_section].distance;
-
-                    const section = {
-                        section_start: {
-                            // 구간의 출발지 이름, X, Y
-                            name: section_start_name,
-                            X: section_start.x,
-                            Y: section_start.y,
-                        },
-                        section_end: {
-                            // 구간의 목적지 이름, X, Y
-                            name: section_end_name,
-                            X: section_end.x,
-                            Y: section_end.y,
-                        },
-                        sectionTime: sectionTime, // 구간의 소요시간(s)
-                        distance: distance, // 구간의 거리(m)
-                    };
-
-                    if (method[cur_section].mode === 'WALK' || method[cur_section].mode === 'TRANSFER') {
-                        // 구간의 이동수단이 도보 or 환승일때
-                        section.mode = 'WALK';
-                    } else if (method[cur_section].mode === 'BUS' || method[cur_section].mode === 'SUBWAY') {
-                        // 이동수단이 버스 or 지하철일때
-                        section.mode = `${method[cur_section].mode}`; // 이동수단
-                        section.route_name = `${method[cur_section].route}`; // 노선 이름
-                        section.route_color = `${method[cur_section].routeColor}`; // 노선 색
-                        section.stationcount = `${method[cur_section].passStopList.stationList.length}`; // 지나가는 정류장 수
-                    }
-
-                    sections.push(section);
-                }
-
-                const Route = {
-                    Start: {
-                        // 출발지 X, Y
-                        X: starting_point.x,
-                        Y: starting_point.y,
-                    },
-
-                    End: {
-                        // 목적지 X, Y
-                        X: end_point.x,
-                        Y: end_point.y,
-                    },
-                    totalTime: totalTime, // 총 소요시간
-                    transferCount: transferCount, // 환승 횟수
-                    section_Count: section_Count, // 구간 개수
-                    sections: sections, // 구간 객체
-                };
-
-                Routes.push(Route);
-            }
-            return Routes;
-        } else {
-            console.error('No itinerary found.');
-        }
-    } catch (err) {
-        console.error(err);
+class Path {
+    constructor(start, end, payment, totalTime, totalWalk, totalWalkTime, subPaths) {
+        this.StartX = start.x;
+        this.StartY = start.y;
+        this.EndX = end.x;
+        this.EndY = end.y;
+        this.Payment = payment;
+        this.TotalTime = totalTime;
+        this.TotalWalk = totalWalk;
+        this.TotalWalkTime = totalWalkTime;
+        this.SubPaths = subPaths;
     }
 }
 
+class SubPath {
+    constructor(type, sectionTime, stationCount, startX, startY, endX, endY, startName, endName) {
+        this.Type = type;
+        this.SectionTime = sectionTime;
+        this.StationCount = stationCount;
+        this.StartX = startX;
+        this.StartY = startY;
+        this.EndX = endX;
+        this.EndY = endY;
+        this.StartName = startName;
+        this.EndName = endName;
+    }
+}
+
+class Subway extends SubPath {
+    constructor(sectionTime, stationCount, startX, startY, endX, endY, startName, endName, subwayName, subwayColor) {
+        super('SUBWAY', sectionTime, stationCount, startX, startY, endX, endY, startName, endName);
+        this.SubwayName = subwayName;
+        this.SubwayColor = subwayColor;
+    }
+}
+
+class Bus extends SubPath {
+    constructor(sectionTime, stationCount, startX, startY, endX, endY, startName, endName, laneInfo) {
+        super('BUS', sectionTime, stationCount, startX, startY, endX, endY, startName, endName);
+        this.LaneInfo = laneInfo;
+    }
+}
+
+class Walk extends SubPath {
+    constructor(sectionTime, distance) {
+        super('WALK', sectionTime, null, null, null, null, null, null, null);
+        this.Distance = distance;
+    }
+}
+
+async function GetRoot(startX, startY, endX, endY) {
+    const options = {
+        apiKey: `${process.env.ODSAY_KEY}`,
+        OPT: 0,           // 경로검색결과 정렬방식
+        SearchPathType: 0  // 도시 내 경로수단을 지정한다
+    }
+    const url = `https://api.odsay.com/v1/api/searchPubTransPathT?&apiKey=${options.apiKey}&SX=${startX}&SY=${startY}&EX=${endX}&EY=${endY}&OPT=${options.OPT}&SearchPathType=${options.SearchPathType}`;
+
+    try {
+        const response = await axios.get(url);
+        if (response.status == 200) {
+            const Paths = [];
+
+            response.data.result.path.forEach(path => {
+                var TotalWalkTime = 0;
+                const SubPaths = [];
+                path.subPath.forEach(subpath => {
+                    let SubPath;
+                    switch (subpath.trafficType) {
+                        case 1: // 지하철
+                            var { start, end } = convert.ToXY(subpath.startY, subpath.startX, subpath.endY, subpath.endX);
+                            const SubwayColor = SubwayColorMap[subpath.lane[0].name] || '#000000';
+                            SubPath = new Subway(subpath.sectionTime, subpath.stationCount, start.x, start.y, end.x, end.y, subpath.startName, subpath.endName, subpath.lane[0].name, SubwayColor);
+                            break;
+                        case 2: // 버스
+                            var { start, end } = convert.ToXY(subpath.startY, subpath.startX, subpath.endY, subpath.endX);
+                            const LaneInfo = subpath.lane.map(lane => ({
+                                BusNo: lane.busNo,
+                                BusID: lane.busID,
+                                BusColor: BusColorMap[lane.type] || '#000000'
+                            }));
+                            SubPath = new Bus(subpath.sectionTime, subpath.stationCount, start.x, start.y, end.x, end.y, subpath.startName, subpath.endName, LaneInfo);
+                            break;
+                        case 3: // 도보
+                            SubPath = new Walk(subpath.sectionTime, subpath.distance);
+                            TotalWalkTime += subpath.sectionTime;
+                            break;
+                        default:
+                            // 다른 교통 수단
+                            break;
+                    }
+                    SubPaths.push(SubPath);
+                });
+                // 출발지, 도착지 위경도 --> X Y로 변환
+                var { start, end } = convert.ToXY(startY, startX, endY, endX);
+                const p = new Path(start, end, path.info.payment, path.info.totalTime, path.info.totalWalk, TotalWalkTime, SubPaths);
+                Paths.push(p);
+            });
+            return Paths;
+        }
+        else {
+            console.error(`HTTP 요청 실패, 상태 코드 : ${response.status}`);
+        }
+    } catch (err) {
+        if (err.response) {
+            console.error(`HTTP 요청 실패, 상태 코드 : ${response.status}`);
+        } else if (err.request) {
+            console.error(`네트워크 문제 : ${err.message}`);
+        } else
+            console.error(`오류 발생 : ${err.message}`);
+    }
+}
 
 module.exports = {
-    getPublicTransport: getPublicTransport
+    GetRoot: GetRoot
 };

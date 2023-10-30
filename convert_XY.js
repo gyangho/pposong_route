@@ -75,12 +75,13 @@ function dfs_xy_conv(code, v1, v2) {
     return rs;
 }
 
+function ToXY(startY, startX, endY, endX) {
+    const start = dfs_xy_conv('toXY', startY, startX);
+    const end = dfs_xy_conv('toXY', endY, endX);
+    return { start, end };
+}
+
 module.exports = {
-    dfs_xy_conv: dfs_xy_conv
+    dfs_xy_conv: dfs_xy_conv,
+    ToXY: ToXY
 };
-
-// var rs = dfs_xy_conv("toLL", "60", "127");
-// console.log(rs.lat, rs.lng);
-
-// var rs2 = dfs_xy_conv("toXY", "37.579871128849334", "126.98935225645432");
-// console.log(rs2.x, rs2.y);
