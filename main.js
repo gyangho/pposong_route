@@ -10,6 +10,7 @@ const { resourceUsage } = require('process');
 const schedule = require('node-schedule')
 const forecast = require('./Ultra_Forecast.js')
 var db = require('./db');
+const { Console } = require('console');
 
 const app = express();
 const port = 1521;
@@ -190,19 +191,20 @@ const httpsServer = https.createServer(options, app);
 
 httpsServer.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
-    schedule.scheduleJob('0 0,10,20,30,40,50 * * * *', async function () {
-        console.log('Forecast Updating Started....');
+    schedule.scheduleJob('0,20,40 * * * * *', async function () {
         const input_date = getTimeStamp(1);
         const input_time = getTimeStamp(2);
         const promises = [];
-
+        const HH = input_time.toString().substring(0, 2);
+        const MM = input_time.toString().substring(2);
+        console.log('________________________________');
+        console.log(`Forecast Updating Started[${HH}:${MM}]`);
         for (let i = 0; i < 30; i++) {
             try {
                 const input_x = locArr[i][0];
                 const input_y = locArr[i][1];
 
                 var Data = forecast.get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y);
-                console.log(i + 1, Data);
             
                 promises.push(Data);
             }
@@ -213,16 +215,16 @@ httpsServer.listen(port, () => {
             };
         }
         const ultra_forecast_datas = await Promise.all(promises);
-        console.log("Promise End");
-        console.log(ultra_forecast_datas);
+        console.log(`Promise End([${HH}:${MM}]날씨 데이터)`);
+        //console.log(ultra_forecast_datas);
         
         for (let i = 0; i < 30; i++) {
             for (let j = 0; j < 6; j++) {
                 try {
-                    db.query('INSERT INTO foreCast (DATE, TIME, X, Y, RN1, T1H, REH, WSD, UPTIME) VALUES(?,?,?,?,?,?,?,?,?)', [ultra_forecast_datas[i][j].Date, ultra_forecast_datas[i][j].Time, ultra_forecast_datas[i][j].X,  ultra_forecast_datas[i][j].Y, ultra_forecast_datas[i][j].RN1, ultra_forecast_datas[i][j].T1H, ultra_forecast_datas[i][j].REH, ultra_forecast_datas[i][j].WSD, input_time],
-                    await function (error, results, fields) {
-                        if (error) throw error;
-                    });
+                    db.query('INSERT INTO foreCast (DATE, TIME, X, Y, RN1, T1H, REH, WSD, UPTIME) VALUES(?,?,?,?,?,?,?,?,?)', [ultra_forecast_datas[i][j].Date, ultra_forecast_datas[i][j].Time, ultra_forecast_datas[i][j].X, ultra_forecast_datas[i][j].Y, ultra_forecast_datas[i][j].RN1, ultra_forecast_datas[i][j].T1H, ultra_forecast_datas[i][j].REH, ultra_forecast_datas[i][j].WSD, input_time],
+                        await function (error, results, fields) {
+                            if (error) throw error;
+                        });
                 }
                 catch (error) {
                     console.error(error);
@@ -231,9 +233,10 @@ httpsServer.listen(port, () => {
         }
 
         db.query('DELETE FROM FORECAST WHERE UPTIME != ?', [input_time],
-            await function (error, results, fields) {
-                if (error) throw error;
-            });
-        console.log("DONE!");
+        await function (error, results, fields) {
+            if (error) throw error;
+        });
+        console.log("DONE!(DB foreCast update)");
+    
     });
 })
