@@ -191,14 +191,17 @@ const httpsServer = https.createServer(options, app);
 
 httpsServer.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
-    schedule.scheduleJob('0,20,40 * * * * *', async function () {
+    schedule.scheduleJob('0 0,5,10,15,20,25,30,35,40,45,50,55 * * * *', async function () {
         const input_date = getTimeStamp(1);
         const input_time = getTimeStamp(2);
         const promises = [];
         const HH = input_time.toString().substring(0, 2);
         const MM = input_time.toString().substring(2);
+        const time = input_time.toString().substring(0, 2) + "00";
         console.log('________________________________');
         console.log(`Forecast Updating Started[${HH}:${MM}]`);
+        console.time(`Forecast Update[${HH}:${MM}] 소요시간`);
+
         for (let i = 0; i < 30; i++) {
             try {
                 const input_x = locArr[i][0];
@@ -218,25 +221,48 @@ httpsServer.listen(port, () => {
         console.log(`Promise End([${HH}:${MM}]날씨 데이터)`);
         //console.log(ultra_forecast_datas);
         
-        for (let i = 0; i < 30; i++) {
-            for (let j = 0; j < 6; j++) {
-                try {
-                    db.query('INSERT INTO foreCast (DATE, TIME, X, Y, RN1, T1H, REH, WSD, UPTIME) VALUES(?,?,?,?,?,?,?,?,?)', [ultra_forecast_datas[i][j].Date, ultra_forecast_datas[i][j].Time, ultra_forecast_datas[i][j].X, ultra_forecast_datas[i][j].Y, ultra_forecast_datas[i][j].RN1, ultra_forecast_datas[i][j].T1H, ultra_forecast_datas[i][j].REH, ultra_forecast_datas[i][j].WSD, input_time],
-                        await function (error, results, fields) {
-                            if (error) throw error;
-                        });
-                }
-                catch (error) {
-                    console.error(error);
+        //40~44(분)인 경우, 현재 시간의 날씨 데이터를 사용해야 한다.
+        if (40 <= input_time % 100 && input_time % 100 <= 44) { 
+            db.query('DELETE FROM FORECAST WHERE TIME != ?', [time],    // 현재 시각 제외 모두 삭제
+            await function (error, results, fields) {
+                if (error) throw error;
+                });
+            
+            for (let i = 0; i < 30; i++) {
+                for (let j = 0; j < 5; j++) {
+                    try {
+                        db.query('INSERT INTO foreCast (DATE, TIME, X, Y, RN1, T1H, REH, WSD, UPTIME) VALUES(?,?,?,?,?,?,?,?,?)', [ultra_forecast_datas[i][j].Date, ultra_forecast_datas[i][j].Time, ultra_forecast_datas[i][j].X, ultra_forecast_datas[i][j].Y, ultra_forecast_datas[i][j].RN1, ultra_forecast_datas[i][j].T1H, ultra_forecast_datas[i][j].REH, ultra_forecast_datas[i][j].WSD, input_time],
+                            await function (error, results, fields) {
+                                if (error) throw error;
+                            });
+                    }
+                    catch (error) {
+                        console.error(error);
+                    }
                 }
             }
         }
-
-        db.query('DELETE FROM FORECAST WHERE UPTIME != ?', [input_time],
-        await function (error, results, fields) {
-            if (error) throw error;
-        });
+        else {  // input_time이 다른 모든 데이터 다 삭제
+            db.query('DELETE FROM FORECAST WHERE UPTIME != ?', [input_time],
+                await function (error, results, fields) {
+                    if (error) throw error;
+                });
+                for (let i = 0; i < 30; i++) {
+                    for (let j = 0; j < 6; j++) {
+                        try {
+                            db.query('INSERT INTO foreCast (DATE, TIME, X, Y, RN1, T1H, REH, WSD, UPTIME) VALUES(?,?,?,?,?,?,?,?,?)', [ultra_forecast_datas[i][j].Date, ultra_forecast_datas[i][j].Time, ultra_forecast_datas[i][j].X, ultra_forecast_datas[i][j].Y, ultra_forecast_datas[i][j].RN1, ultra_forecast_datas[i][j].T1H, ultra_forecast_datas[i][j].REH, ultra_forecast_datas[i][j].WSD, input_time],
+                                await function (error, results, fields) {
+                                    if (error) throw error;
+                                });
+                        }
+                        catch (error) {
+                            console.error(error);
+                        }
+                    }
+                }
+        
+        }
         console.log("DONE!(DB foreCast update)");
-    
+        console.timeEnd(`Forecast Update[${HH}:${MM}] 소요시간`);
     });
 })
