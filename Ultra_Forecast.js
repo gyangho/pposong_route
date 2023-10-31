@@ -100,14 +100,24 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
     let maxAttempts = 3;   // 최대 시도 횟수
     const ultra_forecast_datas = [];
 
-    // 초단기예측 6시간 결과
-    // 1100 ~ 1144 --> 초단기예측(base_time : 1000) --> 11, 12, 13, 14, 15, 16
-    // 1200 ~ 1244 --> 초단기예측(base_time : 1100) --> 12, 13, 14, 15, 16, 17
+    // 0~40(분) -> 초단기예측 
+    // 13:30 검색 --> 13, 14, 15, 16, 17, 18 데이터 제공
+    // 40~44(분) --> 초단기예측()
+    // 13:42 검색 --> 14, 15, 16, 17, 18, 19 데이터 제공
+    // 초단기실황 사용 못함(45분 이후 발표)
     if (input_time % 100 < 45) {
         for (let attempt = 0; attempt < maxAttempts; attempt++) {   // 오류 발생시 try catch로 초단기예보API 최대 3번 재호출
             try {
                 const f_response = await axios.get(f_url, { params: queryParams });
                 const items = f_response.data.response.body.items.item;
+
+                // 40~44(분)인 경우, cur_time + 100을 하여 1시간 뒤의 날씨 데이터들 받아옴
+                if (40 <= input_time % 100 && input_time % 100 < 45) {
+                    cur_time = Math.floor(cur_time / 100) * 100 + 100;
+                    if (cur_time === 2400)
+                        cur_time = 0;
+                }
+
                 let next_time = cur_time;
                 let check = 0, check2 = 0;
 
@@ -156,11 +166,8 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
         }
     }
 
-    // 초단기실황 결과 1개 + 초단기예측 결과 5개
-    // 1145 ~ 1159 --> 초단기실황(base_time : 1100) --> 11
-    //                 + 초단기예측(base_time : 1100) --> 12, 13, 14, 15, 16
-    // 1245 ~ 1259 --> 초단기실황(base_time : 1200) --> 12
-    //                 + 초단기예측(base_time : 1200) --> 13, 14, 15, 16, 16
+    // 45~59(분) --> 초단기실황 + 초단기예측
+    // 13:50 검색 --> 13(초단기실황) + 14, 15, 16, 17, 18, 19(초단기예보)
     else {
         let {
             cur_base_time,  //  input_time과 가장 가까운 base_time
