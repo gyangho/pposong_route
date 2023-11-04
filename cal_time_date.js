@@ -6,7 +6,7 @@ function get_basetime_basedate(input_date, input_time, time_to_add, time_to_divi
 
     if (cur_base_time === -100) {
         cur_base_time = 2300;
-        if (prev_base_date % 10 === 1)
+        if (prev_base_date.toString().slice(-2) === '01')
             prev_base_date = get_prev_date(input_date); // 이전달의 마지막 날
 
         else
