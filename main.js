@@ -40,6 +40,8 @@ const credentials = {
 const app = express()
 const port = 1521
 
+const httpsServer = https.createServer(credentials, app);
+
 //날짜, 시간 구하기
 function getTimeStamp(i) {
     var d = new Date();
@@ -512,7 +514,6 @@ app.post('/main/POI/result/pposongtime4', async (req, res) => {
     });
 })
 
-const httpsServer = https.createServer(credentials, app);
 
 httpsServer.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
