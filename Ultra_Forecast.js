@@ -20,7 +20,7 @@ function fill_existData(existingData, category, fcstValue) {
         else if (fcstValue === '50.0mm 이상')
             existingData[category] = 50;
         else
-            existingData[category] = fcstValue;
+            existingData[category] = parseInt(fcstValue.replace('mm', ''));
     } else {
         existingData[category] = fcstValue;
     }
@@ -37,7 +37,7 @@ function fill_newData(data, category, fcstValue) {
         else if (fcstValue === '50.0mm 이상')
             data[category] = 50;
         else
-            data[category] = fcstValue;
+            data[category] = parseInt(fcstValue.replace('mm', ''));
     } else {
         data[category] = fcstValue;
     }
@@ -50,22 +50,23 @@ async function fill_nowCast(items, ultra_forecast_datas, cur_base_date, cur_base
         if (item.category === "RN1") {
             if (item.obsrValue === '강수없음')
                 rn1 = 0;
-            else if (item.obserValue === '1.0mm 미만')
+            else if (item.obsrValue === '1.0mm 미만')
                 rn1 = 1;
-            else if (item.obserValue === '30.0~50.0mm')
+            else if (item.obsrValue === '30.0~50.0mm')
                 rn1 = 30;
-            else if (item.obserValue === '50.0mm 이상')
+            else if (item.obsrValue === '50.0mm 이상')
                 rn1 = 50;
             else
-                rn1 = parseFloat(item.obsrValue);
+                rn1 = parseInt(item.obsrValue.replace('mm', ''));
         }
         else if (item.category === "T1H")
-            t1h = item.obsrValue;
+            t1h = parseInt(item.obsrValue);
         else if (item.category === "REH")
-            reh = item.obsrValue;
+            reh = parseInt(item.obsrValue);
         else if (item.category === "WSD")
-            wsd = item.obsrValue;
+            wsd = parseInt(item.obsrValue);
     });
+    var a = 3;
     ultra_forecast_datas.push({ Date: parseInt(cur_base_date), Time: cur_base_time_str, X: input_x, Y: input_y, RN1: rn1, T1H: t1h, REH: reh, WSD: wsd });
 }
 
