@@ -191,7 +191,7 @@ const httpsServer = https.createServer(options, app);
 
 httpsServer.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
-    schedule.scheduleJob('0 0,5,10,15,20,25,30,35,40,45,50,55 * * * *', async function () {
+    schedule.scheduleJob('10 0,10,20,30,40,50 * * * *', async function () {
         const input_date = getTimeStamp(1);
         const input_time = getTimeStamp(2);
         const promises = [];
@@ -260,7 +260,6 @@ httpsServer.listen(port, () => {
                         }
                     }
                 }
-        
         }
         console.log("DONE!(DB foreCast update)");
         console.timeEnd(`Forecast Update[${HH}:${MM}] 소요시간`);
