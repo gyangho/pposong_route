@@ -60,65 +60,84 @@ const BusColorMap = {
 };
 
 class Path{
-  constructor(start, end, payment, totalTime, totalWalk, totalWalkTime, subPaths) {
+  constructor(start, end, path, TotalWalkTime, subPaths) {
     this.StartX = start.x;
+    this.StartLat = parseFloat(start.lat);
     this.StartY = start.y;
+    this.StartLon = parseFloat(start.lon);
     this.EndX = end.x;
+    this.EndLat = parseFloat(end.lat);
     this.EndY = end.y;
-    this.Payment = payment;
-    this.TotalTime = totalTime;
-    this.TotalWalk = totalWalk;
-    this.TotalWalkTime = totalWalkTime;
+    this.EndLon = parseFloat(end.lon);
+    this.Payment = path.info.payment;
+    this.TotalTime = path.info.totalTime;
+    this.TotalWalk = path.info.totalWalk;
+    this.TotalWalkTime = TotalWalkTime;
     this.SubPaths = subPaths;
   }
 }
 
 class SubPath{
-  constructor(type, sectionTime, stationCount, startX, startY, endX, endY, startName, endName) {
+  constructor(type, subpath, stationInfo) {
     this.Type = type;
-    this.SectionTime = sectionTime;
-    this.StationCount = stationCount;
-    this.StartX = startX;
-    this.StartY = startY;
-    this.EndX = endX;
-    this.EndY = endY;
-    this.StartName = startName;
-    this.EndName = endName;
+    this.SectionTime = subpath.sectionTime;
+    this.StationCount = subpath.stationCount;
+    this.StartX = subpath.startX;
+    this.StartY = subpath.startY;
+    this.EndX = subpath.endX;
+    this.EndY = subpath.endY;
+    this.StartName = subpath.startName;
+    this.EndName = subpath.endName;
+    this.StationInfo = stationInfo;
   }
 }
 
 class Subway extends SubPath{
-  constructor(sectionTime, stationCount, startX, startY, endX, endY, startName, endName, subwayName, subwayColor) {
-    super('SUBWAY', sectionTime, stationCount, startX, startY, endX, endY, startName, endName);
+  constructor(subpath, subwayName, subwayColor, StationInfo) {
+    super('SUBWAY', subpath, StationInfo);
     this.SubwayName = subwayName;
     this.SubwayColor = subwayColor;
   }
 }
 
 class Bus extends SubPath {
-  constructor(sectionTime, stationCount, startX, startY, endX, endY, startName, endName, laneInfo) {
-    super('BUS', sectionTime, stationCount, startX, startY, endX, endY, startName, endName);
-    this.LaneInfo = laneInfo;
+  constructor(subpath, LaneInfo, StationInfo) {
+    super('BUS', subpath, StationInfo);
+    this.LaneInfo = LaneInfo;
   }
 }
 
 class Walk extends SubPath {
-  constructor(sectionTime, distance) {
-    super('WALK', sectionTime, null, null, null, null, null, null, null);
-    this.Distance = distance;
+  constructor(subpath) {
+    super('WALK', subpath, null);
+    this.Distance = subpath.distance;
   }
+}
+
+function getStationList(stations) { // 지나가는 정류장들 정보(이름, 위도, 경도) 저장
+  const StationInfo = stations.map(station => ({
+    Name: station.stationName,
+    Lat: parseFloat(station.y),
+    Lon: parseFloat(station.x)
+  }))
+  return StationInfo;
 }
 
 async function GetRoot(startX, startY, endX, endY) {
   const options = {
     apiKey: `${process.env.ODSAY_KEY}`,
     OPT: 0,           // 경로검색결과 정렬방식
-    SearchPathType:0  // 도시 내 경로수단을 지정한다
+    SearchPathType: 0,  // 도시 내 경로수단을 지정한다
+    SX: `${startX}`,
+    SY: `${startY}`,
+    EX: `${endX}`,
+    EY: `${endY}`
   }
-  const url = `https://api.odsay.com/v1/api/searchPubTransPathT?&apiKey=${options.apiKey}&SX=${startX}&SY=${startY}&EX=${endX}&EY=${endY}&OPT=${options.OPT}&SearchPathType=${options.SearchPathType}`;
+
+  const url = `https://api.odsay.com/v1/api/searchPubTransPathT`;
 
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {params : options});
     if (response.status == 200) {
       const Paths = [];
 
@@ -126,12 +145,14 @@ async function GetRoot(startX, startY, endX, endY) {
         var TotalWalkTime = 0;
         const SubPaths = [];
         path.subPath.forEach(subpath => {
-          let SubPath;
+          let SubPath, StationInfo;
           switch (subpath.trafficType) {
             case 1: // 지하철
               var { start, end } = convert.ToXY(subpath.startY, subpath.startX, subpath.endY, subpath.endX);
               const SubwayColor = SubwayColorMap[subpath.lane[0].name] || '#000000';
-              SubPath = new Subway(subpath.sectionTime, subpath.stationCount, start.x, start.y, end.x, end.y, subpath.startName, subpath.endName, subpath.lane[0].name, SubwayColor);
+              StationInfo = getStationList(subpath.passStopList.stations);
+
+              SubPath = new Subway(subpath, subpath.lane[0].name, SubwayColor, StationInfo);
               break;
             case 2: // 버스
               var { start, end } = convert.ToXY(subpath.startY, subpath.startX, subpath.endY, subpath.endX);
@@ -140,10 +161,12 @@ async function GetRoot(startX, startY, endX, endY) {
                 BusID : lane.busID,
                 BusColor : BusColorMap[lane.type] || '#000000'
               }));
-              SubPath = new Bus(subpath.sectionTime, subpath.stationCount, start.x, start.y, end.x, end.y, subpath.startName, subpath.endName, LaneInfo);
+              StationInfo = getStationList(subpath.passStopList.stations);
+
+              SubPath = new Bus(subpath, LaneInfo, StationInfo);
             break;
             case 3: // 도보
-              SubPath = new Walk(subpath.sectionTime, subpath.distance);
+              SubPath = new Walk(subpath);
               TotalWalkTime += subpath.sectionTime;
               break;
             default:
@@ -154,7 +177,7 @@ async function GetRoot(startX, startY, endX, endY) {
         });     
         // 출발지, 도착지 위경도 --> X Y로 변환
         var { start, end } = convert.ToXY(startY, startX, endY, endX);
-        const p = new Path(start, end, path.info.payment, path.info.totalTime, path.info.totalWalk, TotalWalkTime, SubPaths);
+        const p = new Path(start, end, path, TotalWalkTime, SubPaths);
         Paths.push(p);
       });
       return Paths;
