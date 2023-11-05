@@ -3,6 +3,7 @@ const convert = require('./convert_XY');
 
 const path = require('path');
 const dotenv = require('dotenv');
+const json = require('body-parser/lib/types/json');
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 const SubwayColorMap = {
@@ -109,7 +110,7 @@ class Bus extends SubPath {
 
 class Walk extends SubPath {
   constructor(subpath) {
-    super('WALK', subpath, null);
+    super('WALK', subpath);
     this.Distance = subpath.distance;
   }
 }
