@@ -9,18 +9,25 @@ const url = require('url');
 const { resourceUsage } = require('process');
 const schedule = require('node-schedule')
 const forecast = require('./Ultra_Forecast.js')
+const weather = require('./get_weather_Data.js')
+const cors = require('cors');
 var db = require('./db');
+
 const { Console } = require('console');
+const { dfs_xy_conv } = require('./convert_XY.js');
+const { default: axios } = require('axios');
 
 const app = express();
+app.use(cors());
+
 const port = 1521;
 var locArr = [
-    [60, 127], [61, 127], [60, 126], [59, 126], [61, 126],
-    [62, 126], [62, 127], [62, 128], [60, 128], [61, 128],
-    [61, 129], [62, 129], [59, 127], [59, 128], [58, 127],
-    [58, 126], [57, 126], [58, 125], [57, 127], [57, 125],
-    [59, 124], [59, 125], [58, 124], [60, 125], [61, 125],
-    [61, 124], [62, 125], [63, 125], [63, 126], [63, 127]
+    [61, 129], [62, 129],
+    [59, 128], [60, 128], [61, 128], [62, 128],
+    [57, 127], [58, 127], [59, 127], [60, 127], [61, 127], [62, 127], [63, 127],
+    [57, 126], [58, 126], [59, 126], [60, 126], [61, 126], [62, 126], [63, 126],
+    [57, 125], [58, 125], [59, 125], [60, 125], [61, 125], [62, 125], [63, 125],
+    [58, 124], [59, 124], [61, 124]
 ];
 
 //날짜, 시간 구하기
@@ -69,6 +76,30 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname, '/public')));
+
+app.get('/main', async (req, res) => {
+    const filePath = path.join(__dirname, '/views/map.html');
+    var grid_data = [];
+    try {
+        for (var idx = 0; idx < 30; idx++) {
+            var data = await weather.get_6weather_Data(locArr[idx][0], locArr[idx][1]);
+            grid_data.push(data);
+        }
+
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                res.status(500).send('Error reading file');
+            }
+            else {
+                const update_data = data.replace(`{{grid_data}}`, JSON.stringify(grid_data));
+                res.send(update_data);
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error getting data');
+    }
+});
 
 app.get('/main/POI', async (req, res) => {
     let stime = getTimeStamp(1) + "1200";
@@ -181,7 +212,7 @@ app.get('/main/POI/result', async (req, res) => {
 
         const modifiedTemplate = fileData.replace(`{{DYNAMIC_CONTENT}}`, PATH);
         res.send(modifiedTemplate);
-
+        //res.send(Routes);
     } catch (err) {
         console.error('파일 읽기 에러:', err);
     }
@@ -217,6 +248,7 @@ httpsServer.listen(port, () => {
                 i--;
             };
         }
+
         const ultra_forecast_datas = await Promise.all(promises);
         console.log(`Promise End([${HH}:${MM}]날씨 데이터)`);
         //console.log(ultra_forecast_datas);
