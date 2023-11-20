@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Kakao 지도 시작하기</title>
+
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Page Title</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+    </style>
+
+</head>
+<body>
+	<div id="map" style="width:100vw;height:100vh;"></div>
+	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b57b73ae393ddcbd717c07c95f05efd0"></script>
+	<script>
+		var container = document.getElementById('map');
+		var options = {
+			// 서울 정중앙 위도, 경도
+			center: new kakao.maps.LatLng(37.5642135, 127.0016985),
+			level: 8
+		};
+		var map = new kakao.maps.Map(container, options);	
+		
+		const receivedData = JSON.parse(`{{grid_data}}`);
+	</script>
+	<script type="module" src="/js/map.js" async></script>
+
+	<button onclick="showGrid(0)">1시</button>
+	<button onclick="showGrid(1)">2시</button>
+	<button onclick="showGrid(2)">3시</button>
+	<button onclick="showGrid(3)">4시</button>
+	<button onclick="showGrid(4)">5시</button>
+	<button onclick="showGrid(5)">6시</button>
+
+</body>
+</html>
