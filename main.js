@@ -4,16 +4,16 @@ const session = require('express-session')
 const schedule = require('node-schedule')
 const bodyParser = require('body-parser');
 const FileStore = require('session-file-store')(session)
-const forecast = require('./Ultra_Forecast.js')
+const forecast = require('./API/Ultra_Forecast.js')
 const fs = require('fs');
-const transport = require('./public_transport.js')
+const transport = require('./API/public_transport.js')
 const pposongtime = require('./pposongtime.js')
-var calculate = require('./cal_time_date.js')
+var calculate = require('./API/cal_time_date.js')
 var authRouter = require('./auth');
 var authCheck = require('./authCheck.js');
 var db = require('./db');
 var path = require('path');
-var POI = require('./POI.js');
+var POI = require('./API/KAKAO_POI.js');
 
 //서울 시 내 격자 좌표들
 var locArr =
@@ -39,6 +39,8 @@ const credentials = {
 
 const app = express()
 const port = 1521
+
+const httpsServer = https.createServer(credentials, app);
 
 //날짜, 시간 구하기
 function getTimeStamp(i) {
@@ -166,12 +168,27 @@ app.get('/main/mypage/bookmark', async (req, res) => {
 
 //장소 검색
 app.get('/main/POI', async (req, res) => {
+
+    let stime = getTimeStamp(1) + "1200";
+    let itime = parseInt(stime, 10);
+    const filePath = path.join(__dirname, '/views/mainFunc.html');
+    let Routes = {};
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            res.status(500).send('Error reading file');
+        }
+        else {
+            res.send(data);
+        }
+    });
+
+    /*
     let stime = getTimeStamp(1) + "1200";
     let itime = parseInt(stime, 10);
     const filePath = path.join(__dirname, '/views/mainFunc.html');
     let Routes = {};
     try {
-        Routes = await transport.getPublicTransport(126.9961, 37.5035, 126.96, 37.4946, 202307291200) //신반포역->정보관
+        Routes = await transport.GetRoot(126.95976562412, 37.494571847859, 126.94765009467245, 37.562544705628845) //신반포역->정보관
         if (Routes.length < 1) {
             //경로없음
             res.send("경로없음");
@@ -194,7 +211,7 @@ app.get('/main/POI', async (req, res) => {
                 .replace(/{{R}}/g, mRoutes);
             res.send(modifiedData);
         }
-    });
+    });*/
 })
 
 //검색 제출
@@ -223,7 +240,7 @@ app.get('/main/POI/result', async (req, res) => {
     const filePath = path.join(__dirname, '/views/result.html');
     let Routes = {};
     try {
-        Routes = await transport.getPublicTransport(126.9961, 37.5035, 126.950235, 37.494745, 202307301200) //신반포역->정보관
+        Routes = await transport.GetRoot(126.95976562412, 37.494571847859, 126.94765009467245, 37.562544705628845) //신반포역->정보관
         //console.log(Routes[0]);
         if (Routes.length < 1) {
             //경로없음
@@ -512,11 +529,10 @@ app.post('/main/POI/result/pposongtime4', async (req, res) => {
     });
 })
 
-const httpsServer = https.createServer(credentials, app);
 
 httpsServer.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
-    schedule.scheduleJob('50 0,10,20,30,40,50 * * * *', async function () {
+    schedule.scheduleJob('50 0,14,20,30,40,50 * * * *', async function () {
         console.log('Forecast Updating Started....');
         const input_date = getTimeStamp(1);
         const input_time = getTimeStamp(2);

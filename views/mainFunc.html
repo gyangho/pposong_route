@@ -5,13 +5,10 @@
 	<meta charset="UTF-8">
 	<title>MainFuncPage</title>
 	<link rel="stylesheet" href="/css/mainFunc-style.css">
-	<script defer src="/js/mainFunc.js"></script>
-	<script src="/js/data.js"></script>
 
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
 </head>
 
 <body>
@@ -53,16 +50,23 @@
 
 	<div id="search">
 		<p>Search for pposong-gil</p>
-		<form id="search-form" action="/search_path" method="get">
+		<form id="search-form" action="/main/POI/result" method="get">
 			<input type=text name="start" id="start-field" class="search-form-field" placeholder="출발지를 입력하세요"
 				autocomplete="off">
+			<input type="hidden" name="start_lat" id="start-lat">
+			<input type="hidden" name="start_lon" id="start-lon">
+
 			<input type=text name="end" id="end-field" class="search-form-field" placeholder="도착지를 입력하세요"
 				autocomplete="off">
+			<input type="hidden" name="end_lat" id="end-lat">
+			<input type="hidden" name="end_lon" id="end-lon">
+
 			<input type="submit" value="길찾기" id="search-form-submit"
 				onclick="location.href='/main/POI/result'"><!--길찾기 검색결과로 넘어가는 링크-->
 		</form>
 
 	</div>
+
 	<hr size="3" noshade>
 	<div id="bookmark">
 		<div class="word">Bookmark<img src="/image/12.png"
@@ -91,23 +95,64 @@
 			<hr color="#f6ee96">
 		</div>
 	</div>
-	<script>
-		function post요청보내기(url, routeValue) {
-			const form = document.createElement("form");
-			form.method = "POST";
-			form.action = url;
-			document.body.appendChild(form);
-			// Route 값을 추가하는 hidden input 필드 생성
-			const routeInput = document.createElement("input");
-			routeInput.type = "hidden";
-			routeInput.name = "Route";
-			routeInput.value = routeValue;
-			form.appendChild(routeInput);
-			console.log("POST");
-			form.submit();
+
+	<script type="module">
+		import { GetPOI } from "/js/mainFunc.js";
+
+		function initAutocomplete(inputElement, latitude, longitude) {
+			$(inputElement).autocomplete({
+				source: async function (request, response) {
+					const places = await GetPOI(request.term);
+					const placesData = places.map(place => ({
+						label: place.Name,
+						value: place.Name,
+						name: place.Name,
+						address: place.Address,
+						lat: place.Lat,
+						lon: place.Lon
+					}));
+					response(placesData);
+				},
+				open: function (event, ui) {
+					const menu = $(this).autocomplete('widget');
+					const maxHeight = 400;
+					const fieldWidth = $(this).outerWidth();
+					menu.width(fieldWidth);
+					menu.css('max-height', maxHeight + 'px');
+					menu.css('overflow-y', 'auto');
+					menu.css('overflow-x', 'hidden');
+				},
+				select: function (event, ui) {
+					console.log(ui.item.name);
+					console.log(ui.item.address);
+					latitude.value = ui.item.lat;
+					longitude.value = ui.item.lon;
+				},
+				focus: function (event, ui) {
+					return false;
+				},
+				minLength: 1,
+				delay: 50,
+				close: function (event, ui) {
+					autocompleteIsOpen = false;
+					console.log(event);
+				},
+			}).autocomplete("instance")._renderItem = function (ul, item) {
+				return $("<li>")
+					.append(`<div class=h>${item.name}<br>
+						<span style="font-size: 30px; color: gray;">${item.address}</span></div>`)
+					.appendTo(ul);
+			};
 		}
+
+		const inputField = document.getElementById('start-field');
+		const inputField2 = document.getElementById('end-field');
+		const startLatField = document.getElementById('start-lat');
+		const startLonField = document.getElementById('start-lon');
+		const endLatField = document.getElementById('end-lat');
+		const endLonField = document.getElementById('end-lon');
+
+		initAutocomplete(inputField, startLatField, startLonField);
+		initAutocomplete(inputField2, endLatField, endLonField);
 	</script>
-
 </body>
-
-</html>

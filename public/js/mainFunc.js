@@ -1,58 +1,48 @@
-const searchForm = document.getElementById("search-form");
-const searchButton = document.getElementById("search-form-submit");
+import axios from 'https://cdn.jsdelivr.net/npm/axios@1.3.5/+esm';
+import { dfs_xy_conv } from './convert_XY.js';
 
-
-searchButton.addEventListener("click", (event) => {
-    event.preventDefault();
-    const start = searchForm.start.value;
-    const end = searchForm.end.value;
-
-    if (start != 0 && end != 0) {
-        console.log(start, end);
+class Place {
+    constructor(Name, Address, X, Y, Lat, Lon) {
+        this.Name = Name;
+        this.Address = Address;
+        this.X = X;
+        this.Y = Y;
+        this.Lat = Lat;
+        this.Lon = Lon;
     }
+}
 
-});
-
-//출발지 자동완성 기능
-$(function () {
-    $("#start-field").autocomplete({
-        source: List,
-        select: function (event, ui) {
-            console.log(ui.item);
+export async function GetPOI(input) {
+    const url = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(input)}`;
+    const config = {
+        headers: {
+            'Authorization': `KakaoAK fb7f423e7875f1d8206180cb55202084`,
         },
-        foucs: function (event, ui) {
-            return false;
-        },
-        minLength: 1,
-        delay: 100,
-        close: function (event) {	//자동완성창 닫아질때 호출
-            console.log(event);
-        }
-    }).autocomplete("instance")._renderItem = function (ul, item) {    //UI 변경하는 부분
-        return $("<li>")	//기본 tag가 li로 되어 있음 
-            .append("<div class=h>" + item.label + "</div>")	//여기에다가 원하는 모양의 HTML을 만들면 UI가 원하는 모양으로 변함.
-            .appendTo(ul);
     };
-});
 
-//도착지 자동완성 기능
-$(function () {
-    $("#end-field").autocomplete({
-        source: List,
-        select: function (event, ui) {
-            console.log(ui.item);
-        },
-        foucs: function (event, ui) {
-            return false;
-        },
-        minLength: 1,
-        delay: 100,
-        close: function (event) {	//자동완성창 닫아질때 호출
-            console.log(event);
+    try {
+        const response = await axios.get(url, config);
+        if (response.status == 200) {
+            const Places = [];
+            response.data.documents.forEach(place => {
+                const location = dfs_xy_conv("toXY", place.y, place.x);
+                const aPlace = new Place(place.place_name, place.address_name, location.x, location.y, location.lat, location.lon);
+                Places.push(aPlace);
+            });
+            Places.forEach(p => {
+                console.log(p);
+            })
+            return Places;
         }
-    }).autocomplete("instance")._renderItem = function (ul, item) {    //UI 변경하는 부분
-        return $("<li>")	//기본 tag가 li로 되어 있음 
-            .append("<div class=h>" + item.label + "</div>")	//여기에다가 원하는 모양의 HTML을 만들면 UI가 원하는 모양으로 변함.
-            .appendTo(ul);
-    };
-});
+        else {
+            console.error(`HTTP 요청 실패, 상태 코드 : ${response.status}`);
+        }
+    } catch (err) {
+        if (err.response) {
+            console.error(`HTTP 요청 실패, 상태 코드 : ${response.status}`);
+        } else if (err.request) {
+            console.error(`네트워크 문제 : ${err.message}`);
+        } else
+            console.error(`오류 발생 : ${err.message}`);
+    }
+}
