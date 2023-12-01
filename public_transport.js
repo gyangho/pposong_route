@@ -118,9 +118,19 @@ class Bus extends SubPath {
   }
 }
 
+// 2023.12.01 김건학
+// 도보 class에도 위도, 경도, x, y 멤버 추가
 class Walk extends SubPath {
-  constructor(subpath) {
+  constructor(subpath, start, end) {
     super("WALK", subpath);
+    this.StartLat = start.lat;
+    this.StartLon = start.lon;
+    this.EndLat = end.lat;
+    this.EndLon = end.lon;
+    this.StartX = start.x;
+    this.StartY = start.y;
+    this.EndX = end.x;
+    this.EndY = end.y;
     this.Distance = subpath.distance;
   }
 }
@@ -162,8 +172,9 @@ async function GetRoot(startX, startY, endX, endY) {
         var totalCount = 0;
 
         const SubPaths = [];
-        // 2023.11.30 김건학
+        // 2023.12.01 김건학
         // subpath에 저장할 위도, 경도, x, y를 담은 start, end 추가
+        var idx = 0;
         path.subPath.forEach((subpath) => {
           let SubPath, StationInfo;
           switch (subpath.trafficType) {
@@ -215,14 +226,45 @@ async function GetRoot(startX, startY, endX, endY) {
               SubPath = new Bus(subpath, LaneInfo, StationInfo, start, end);
               break;
             case 3: // 도보
-              SubPath = new Walk(subpath);
+              // 2023.12.01 김건학
+              // 도보 구간의 위도, 경도, x, y를 담은 변수 생성
+              if (idx == 0) {
+                // 첫 도보
+                var { start, end } = convert.ToXY(
+                  path.subPath[1].startY,
+                  path.subPath[1].startX,
+                  parseFloat(startY),
+                  parseFloat(startX)
+                );
+              } else if (idx == path.subPath.length - 1) {
+                // 마지막 도보
+                var { start, end } = convert.ToXY(
+                  path.subPath[idx - 1].endY,
+                  path.subPath[idx - 1].endX,
+                  parseFloat(endY),
+                  parseFloat(endX)
+                );
+              } else {
+                // 나머지 도보
+                var { start, end } = convert.ToXY(
+                  path.subPath[idx - 1].endY,
+                  path.subPath[idx - 1].endX,
+                  path.subPath[idx + 1].startY,
+                  path.subPath[idx + 1].startX
+                );
+              }
+              SubPath = new Walk(subpath, start, end);
               TotalWalkTime += subpath.sectionTime;
               break;
             default:
               // 다른 교통 수단
               break;
           }
-          SubPaths.push(SubPath);
+          // 2023.12.01 김건학
+          // 소요시간 0분인 경우 push X
+          if (subpath.distance != 0) SubPaths.push(SubPath);
+
+          idx++;
         });
         // 출발지, 도착지 위경도 --> X Y로 변환
         var { start, end } = convert.ToXY(startY, startX, endY, endX);
