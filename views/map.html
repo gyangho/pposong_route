@@ -19,7 +19,20 @@
 
 </head>
 <body>
-	<div id="map" style="width:100vw;height:100vh;"></div>
+	<script type="module">
+		import {getTimeStamp} from "/js/cal_time.js";
+		window.TimeButton = getTimeStamp(4);
+	</script>
+
+	<div id="map" style="width:100vw;height:100vh; position: relative;">
+		<button id="TimeButton0" onclick="showGrid(0)" style="position: absolute; z-index:100; left: 5%;"></button>
+		<button id="TimeButton1" onclick="showGrid(1)" style="position: absolute; z-index:100; left: 15%;"></button>
+		<button id="TimeButton2" onclick="showGrid(2)" style="position: absolute; z-index:100; left: 25%;"></button>
+		<button id="TimeButton3" onclick="showGrid(3)" style="position: absolute; z-index:100; left: 35%;"></button>
+		<button id="TimeButton4" onclick="showGrid(4)" style="position: absolute; z-index:100; left: 45%;"></button>
+		<button id="TimeButton5" onclick="showGrid(5)" style="position: absolute; z-index:100; left: 55%;"></button>
+	</div>
+
 	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b57b73ae393ddcbd717c07c95f05efd0"></script>
 	<script>
 		var container = document.getElementById('map');
@@ -32,14 +45,19 @@
 		
 		const receivedData = JSON.parse(`{{grid_data}}`);
 	</script>
+
+	<script type="module">
+		// 버튼 동적으로 변경
+		document.getElementById("TimeButton0").innerText = window.TimeButton[0];
+		document.getElementById("TimeButton1").innerText = window.TimeButton[1];
+		document.getElementById("TimeButton2").innerText = window.TimeButton[2];
+		document.getElementById("TimeButton3").innerText = window.TimeButton[3];
+		document.getElementById("TimeButton4").innerText = window.TimeButton[4];
+		document.getElementById("TimeButton5").innerText = window.TimeButton[5];
+	</script>
 	<script type="module" src="/js/map.js" async></script>
 
-	<button onclick="showGrid(0)">1시</button>
-	<button onclick="showGrid(1)">2시</button>
-	<button onclick="showGrid(2)">3시</button>
-	<button onclick="showGrid(3)">4시</button>
-	<button onclick="showGrid(4)">5시</button>
-	<button onclick="showGrid(5)">6시</button>
+
 
 </body>
 </html>
