@@ -1,0 +1,23 @@
+server 
+{
+	listen 443 ssl;
+	server_name dydtkwk.ddns.net;
+	location /
+	{
+		 proxy_pass https://192.168.0.104:1521;
+        }
+	ssl_certificate /etc/letsencrypt/live/dydtkwk.ddns.net/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/dydtkwk.ddns.net/privkey.pem;
+
+        include /etc/letsencrypt/options-ssl-nginx.conf;
+        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+
+server 
+{
+	listen 80;
+	server_name dydtkwk.ddns.net;
+	return 301 https://$host$request_uri;
+
+}
+
