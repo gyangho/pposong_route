@@ -1,0 +1,73 @@
+<!-- 2023.11.30 김건학 
+	뽀송타임 기본 html
+	대중교통 루트 표현
+	강수량 정보 격자로 표현 -->
+<!-- 2023.12.04 김건학 
+    격자 삭제
+    검색 시각에 따라 30분 간격으로 4 시각 계산-->
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>뽀송타임</title>
+    
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Your Page Title</title>
+        <style>
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+            }
+        </style>
+    
+    </head>
+    <body>
+        <script type="module">
+            import {getTimeStamp} from "/js/cal_time.js";
+            window.Route_Time = getTimeStamp(3);
+        </script>
+        <div id="map" style="width:100vw;height:100vh; position: relative;">
+            <button id="TimeButton1" style="position: absolute; z-index:100; left: 5%;"></button>
+            <button id="TimeButton2" style="position: absolute; z-index:100; left: 15%;"></button>
+            <button id="TimeButton3" style="position: absolute; z-index:100; left: 25%;"></button>
+            <button id="TimeButton4" style="position: absolute; z-index:100; left: 35%;"></button>
+            <!-- <button id="TimeButton4" onclick="showGrid(3)" style="position: absolute; z-index:100; left: 35%;"></button> -->
+    
+    
+        </div>
+        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b57b73ae393ddcbd717c07c95f05efd0"></script>
+        <script>
+            // localStorage에서 데이터를 가져옴
+            const Route = JSON.parse(localStorage.getItem('Route_Line')) || {};
+            // 지도에 표현할 날씨 데이터들 render
+            const receivedData = JSON.parse(`{{grid_data}}`);
+    
+            // 대중교통 루트 노드들의 가운데를 기준으로 지도 표현
+            let container = document.getElementById('map');
+            let options = {
+                center: new kakao.maps.LatLng(Route.mid_Lat, Route.mid_Lon),
+                level: 7
+            };
+            let map = new kakao.maps.Map(container, options);
+        </script>
+        <script type="module">
+            import { get_RouteLine } from "/js/pposong.js";
+            window.AAA = get_RouteLine(Route);
+            document.getElementById("TimeButton1").innerText = window.Route_Time[0];
+            document.getElementById("TimeButton2").innerText = window.Route_Time[1];
+            document.getElementById("TimeButton3").innerText = window.Route_Time[2];
+            document.getElementById("TimeButton4").innerText = window.Route_Time[3];
+    
+    
+    
+    
+    
+    
+        </script>
+        <script type="module" src="/js/map.js" async></script>
+    </body>
+    </html>

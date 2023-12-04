@@ -1,4 +1,4 @@
-'<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -48,6 +48,36 @@
     <main class="main-screen">
         {{DYNAMIC_CONTENT}}
     </main>
+
+    <!-- 2023.11.30 김건학 -->
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b57b73ae393ddcbd717c07c95f05efd0&autoload=false"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // route list 클릭 시 화면 전환
+        document.addEventListener('DOMContentLoaded', function(){
+            var Paths = document.querySelectorAll('.route-list');
+            Paths.forEach(function (Path, idx){
+                Path.addEventListener('click', function (){
+                    var Click_Path = Routes[idx];
+                    axios.get('https://localhost:1521/main/POI/result/pposong', {
+                        params:{
+                            Route :Click_Path
+                        }
+                    }).then(function (response){
+                        // 페이지 변경 전에 데이터를 localStorage에 저장
+                        localStorage.setItem('Route_Line', JSON.stringify(Click_Path));
+                        
+                        // 페이지 변경
+                        var newPageURL = 'https://localhost:1521/main/POI/result/pposong';
+                        window.location.href = newPageURL;
+                    }).catch(function (error){
+                        console.error('Error:', error);
+                    });
+                });
+                
+            });     
+        });
+        </script>
 
     <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
     <script src="/js/back.js"></script>

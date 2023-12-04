@@ -75,7 +75,7 @@ function get_nextBasedate(next_time, prev_base_date) {
         next_time = 0;
         prev_base_date = calculate.get_next_basedate(prev_base_date);
     }
-
+    return { next_time, prev_base_date };
 }
 
 async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y) {
@@ -145,17 +145,23 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                         check++;
                         if (check == 6) {
                             next_time = cur_time;
-                            get_nextBasedate(next_time, prev_base_date);
+                            let get_next_time_date = get_nextBasedate(next_time, prev_base_date)
+                            next_time = get_next_time_date.next_time;
+                            prev_base_date = get_next_time_date.prev_base_date;
                             check = 0;
                         }
                         else {
                             next_time += 100; // 100 분을 더해서 다음 시간으로 이동
-                            get_nextBasedate(next_time, prev_base_date);
+                            let get_next_time_date = get_nextBasedate(next_time, prev_base_date)
+                            next_time = get_next_time_date.next_time;
+                            prev_base_date = get_next_time_date.prev_base_date;
                         }
                     } else {
                         next_time = cur_time;
-                        get_nextBasedate(next_time, prev_base_date);
-                        check = 0;
+                        let get_next_time_date = get_nextBasedate(next_time, prev_base_date)
+                        next_time = get_next_time_date.next_time;
+                        prev_base_date = get_next_time_date.prev_base_date;
+                    check = 0;
                     }
                 }
                 return ultra_forecast_datas;
@@ -233,16 +239,22 @@ async function get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y)
                         check++;
                         if (check == 5) {   // 초단기실황 정보가 있으니 5번만 반복
                             next_time = cur_time;
-                            get_nextBasedate(next_time, prev_base_date)
+                            let get_next_time_date = get_nextBasedate(next_time, prev_base_date)
+                            next_time = get_next_time_date.next_time;
+                            prev_base_date = get_next_time_date.prev_base_date;
                             check = 0;
                         }
                         else {
                             next_time += 100; // 100 분을 더해서 다음 시간으로 이동
-                            get_nextBasedate(next_time, prev_base_date)
+                            let get_next_time_date = get_nextBasedate(next_time, prev_base_date)
+                            next_time = get_next_time_date.next_time;
+                            prev_base_date = get_next_time_date.prev_base_date;
                         }
                     } else {
                         next_time = cur_time;
-                        get_nextBasedate(next_time, prev_base_date)
+                        let get_next_time_date = get_nextBasedate(next_time, prev_base_date)
+                        next_time = get_next_time_date.next_time;
+                        prev_base_date = get_next_time_date.prev_base_date;
                         check = 0;
                     }
                 }
