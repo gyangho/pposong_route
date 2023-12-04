@@ -1,0 +1,37 @@
+/* 뽀송타임 경로 요약 컴포넌트 */
+.route-component {
+    background-color: rgba(255, 228, 196, 0.2);
+    padding: 15px;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    border-left: 7px solid var(--yellow);
+}
+
+.route-component i {
+    margin: 0px 4px;
+}
+
+.route-component__info {
+    font-weight: 600;
+    font-size: 18px;
+}
+.route-component__total-time {
+    margin-top: 16px;
+    font-weight: 600;
+    font-size: 25px;
+}
+
+.route-component__walk-time,
+.route-component__vehicle-summary {
+    padding: 10px 0px;
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+.route-component__vehicle-summary {
+    font-size: 14px;
+}
+
+.route-component__vehicle-summary .fa-bus {
+    margin-left: 0;
+}

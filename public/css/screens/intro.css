@@ -1,0 +1,26 @@
+.intro-screen {
+    background-color: rgba(159, 216, 246, 0.6);
+}
+
+.intro-header {
+    margin: 180px 0px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.intro-header__title {
+    font-family: 'Bagel Fat One', cursive;
+    margin-bottom: 20px;
+    font-size: 55px;
+    font-weight: 400;
+}
+
+.intro-header__subtitle {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 20px;
+    width: 100%;
+    font-weight: 400;
+    opacity: 0.9;
+}
