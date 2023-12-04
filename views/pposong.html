@@ -2,6 +2,9 @@
 	뽀송타임 기본 html
 	대중교통 루트 표현
 	강수량 정보 격자로 표현 -->
+<!-- 2023.12.04 김건학 
+    격자 삭제
+    검색 시각에 따라 30분 간격으로 4 시각 계산-->
 
     <!DOCTYPE html>
     <html>
@@ -23,66 +26,48 @@
     
     </head>
     <body>
-        <div id="map" style="width:100vw;height:100vh;"></div>
+        <script type="module">
+            import {getTimeStamp} from "/js/cal_time.js";
+            window.Route_Time = getTimeStamp(3);
+        </script>
+        <div id="map" style="width:100vw;height:100vh; position: relative;">
+            <button id="TimeButton1" style="position: absolute; z-index:100; left: 5%;"></button>
+            <button id="TimeButton2" style="position: absolute; z-index:100; left: 15%;"></button>
+            <button id="TimeButton3" style="position: absolute; z-index:100; left: 25%;"></button>
+            <button id="TimeButton4" style="position: absolute; z-index:100; left: 35%;"></button>
+            <!-- <button id="TimeButton4" onclick="showGrid(3)" style="position: absolute; z-index:100; left: 35%;"></button> -->
+    
+    
+        </div>
         <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b57b73ae393ddcbd717c07c95f05efd0"></script>
-        <!-- <script type="module" src="/js/pposong.js" async></script> -->
         <script>
             // localStorage에서 데이터를 가져옴
             const Route = JSON.parse(localStorage.getItem('Route_Line')) || {};
+            // 지도에 표현할 날씨 데이터들 render
+            const receivedData = JSON.parse(`{{grid_data}}`);
     
             // 대중교통 루트 노드들의 가운데를 기준으로 지도 표현
-            var container = document.getElementById('map');
-            var options = {
+            let container = document.getElementById('map');
+            let options = {
                 center: new kakao.maps.LatLng(Route.mid_Lat, Route.mid_Lon),
                 level: 7
             };
-            var map = new kakao.maps.Map(container, options);
+            let map = new kakao.maps.Map(container, options);
+        </script>
+        <script type="module">
+            import { get_RouteLine } from "/js/pposong.js";
+            window.AAA = get_RouteLine(Route);
+            document.getElementById("TimeButton1").innerText = window.Route_Time[0];
+            document.getElementById("TimeButton2").innerText = window.Route_Time[1];
+            document.getElementById("TimeButton3").innerText = window.Route_Time[2];
+            document.getElementById("TimeButton4").innerText = window.Route_Time[3];
     
     
-            for (var idx = 0; idx < Route.SubPaths.length; idx++) {
-                var subpath = Route.SubPaths[idx];
-                var linePath = [];
-                var Color;
     
     
-                if (subpath.Type == "WALK") {	// 도보 구간
-                } 
-                else {
-                    var stationinfo = subpath.StationInfo;
-                    for (var station_idx = 0; station_idx < stationinfo.length; station_idx++) {
-                        // line 저장
-                        linePath.push(new kakao.maps.LatLng(stationinfo[station_idx].Lat, stationinfo[station_idx].Lon));
-                    }
-                    if (subpath.Type == "BUS") {	// 버스 구간
-                        Color = subpath.LaneInfo[0].BusColor;
-                    } 
-                    else if (subpath.Type == "SUBWAY") {	// 지하철 구간
-                        Color = subpath.SubwayColor;
-                    }
     
-                    // 지도에 표시할 선을 생성합니다
-                    var polyline = new kakao.maps.Polyline({
-                        path: linePath, // 선을 구성하는 좌표배열 입니다
-                        strokeWeight: 10, // 선의 두께 입니다
-                        strokeColor: `${Color}`, // 선의 색깔입니다
-                        strokeOpacity: 1, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
-                        strokeStyle: 'solid' // 선의 스타일입니다
-                    });
-                    // 지도에 선을 표시합니다 
-                    polyline.setMap(map); 
-                }
-            }
-            // 지도에 표현할 날씨 데이터들 render
-            const receivedData = JSON.parse(`{{grid_data}}`);
+    
         </script>
         <script type="module" src="/js/map.js" async></script>
-    
-        <button onclick="showGrid(0)">1시</button>
-        <button onclick="showGrid(1)">2시</button>
-        <button onclick="showGrid(2)">3시</button>
-        <button onclick="showGrid(3)">4시</button>
-        <button onclick="showGrid(4)">5시</button>
-        <button onclick="showGrid(5)">6시</button>
     </body>
     </html>
-    
