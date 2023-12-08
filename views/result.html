@@ -1,3 +1,6 @@
+<!-- 2023.12.08 김건학
+     루트 선택 시localStorage에 start, end 저장  -->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -46,144 +49,57 @@
     </header>
 
     <main class="main-screen">
-        <div class="route-list">
-            <a href="#" onclick="post요청보내기('/main/POI/result/pposongtime1','{{R}}')">
-                <div class=" route-list__column">
-                    <div class="route-list__time">
-                        <h4 class="route-list__total-time">{{T}}분</h4>
-                        <h6 class="route-list__walk-time">도보 17분</h6>
-                    </div>
-                    <div class="route-list__bookmark">
-                        <i class="fa-regular fa-star fa-xl"></i>
-                    </div>
-                </div>
-
-                <div class="route-list__vehicle">
-                    <div class="route-list__vehicle-info">
-                        <i class="fa-solid fa-bus"></i>540,643
-                    </div>
-                    <div class="route-list__vehicle-stop">
-                        <h5>신반포역.세화여중고(중)</h5>
-                    </div>
-                </div>
-
-                <div class="route-list__vehicle">
-                    <div class="route-list__vehicle-info">
-                        <i class="fa-solid fa-bus"></i>752
-                    </div>
-                    <div class="route-list__vehicle-stop">
-                        <h5>갯마을앞(중)</h5>
-                    </div>
-                </div>
-
-                <div class="route-list__vehicle">
-                    <div class="route-list__vehicle-info">
-                        <i class="fa-solid fa-circle-dot"></i>
-                    </div>
-                    <div class="route-list__vehicle-stop">
-                        <h5>숭실대별관앞</h5>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="route-list">
-            <div class="route-list__column">
-                <div class="route-list__time">
-                    <h4 class="route-list__total-time">40분</h4>
-                    <h6 class="route-list__walk-time">도보 7분</h6>
-                </div>
-                <div class="route-list__bookmark">
-                    <i class="fa-regular fa-star fa-xl"></i>
-                </div>
-            </div>
-
-            <div class="route-list__vehicle">
-                <div class="route-list__vehicle-info">
-                    <i class="fa-solid fa-train-subway"></i>9호선 신반포
-                </div>
-                <div class="route-list__vehicle-stop">
-                    <h5></h5>
-                </div>
-            </div>
-
-            <div class="route-list__vehicle">
-                <div class="route-list__vehicle-info">
-                    <i class="fa-solid fa-bus"></i>752
-                </div>
-                <div class="route-list__vehicle-stop">
-                    <h5>노들역</h5>
-                </div>
-            </div>
-
-            <div class="route-list__vehicle">
-                <div class="route-list__vehicle-info">
-                    <i class="fa-solid fa-circle-dot"></i>
-                </div>
-                <div class="route-list__vehicle-stop">
-                    <h5>숭실대별관앞</h5>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="route-list">
-            <div class="route-list__column">
-                <div class="route-list__time">
-                    <h4 class="route-list__total-time">42분</h4>
-                    <h6 class="route-list__walk-time">도보 7분</h6>
-                </div>
-                <div class="route-list__bookmark">
-                    <i class="fa-regular fa-star fa-xl"></i>
-                </div>
-            </div>
-
-            <div class="route-list__vehicle">
-                <div class="route-list__vehicle-info">
-                    <i class="fa-solid fa-bus"></i>6411
-                </div>
-                <div class="route-list__vehicle-stop">
-                    <h5>신반포역.세화여중고(중)</h5>
-                </div>
-            </div>
-
-            <div class="route-list__vehicle">
-                <div class="route-list__vehicle-info">
-                    <i class="fa-solid fa-bus"></i>752
-                </div>
-                <div class="route-list__vehicle-stop">
-                    <h5>동작역.국립현충원</h5>
-                </div>
-            </div>
-
-            <div class="route-list__vehicle">
-                <div class="route-list__vehicle-info">
-                    <i class="fa-solid fa-circle-dot"></i>
-                </div>
-                <div class="route-list__vehicle-stop">
-                    <h5>숭실대별관앞</h5>
-                </div>
-            </div>
-        </div>
+        {{DYNAMIC_CONTENT}}
     </main>
+
+    <!-- 2023.11.30 김건학 -->
+    <script type="text/javascript"
+        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=819399e434bd90427a278678b6e68250&autoload=false"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // route list 클릭 시 화면 전환
+        document.addEventListener('DOMContentLoaded', function () {
+            var Paths = document.querySelectorAll('.route-list');
+            Paths.forEach(function (Path, idx) {
+                Path.addEventListener('click', function () {
+                    var Click_Path = Routes[idx];
+
+                    // 2023.12.08 김건학
+                    // url에서 start, end 데이터 받아오고
+                    var start = new URLSearchParams(window.location.search).get('start');
+                    var end = new URLSearchParams(window.location.search).get('end');
+
+                    axios.get('https://dydtkwk.ddns.net:1521/main/POI/result/pposong', {
+                        params: {
+                            Route: Click_Path,
+                            start: start,
+                            end: end
+                        }
+                    }).then(function (response) {
+                        // 페이지 변경 전에 데이터를 localStorage에 저장
+                        // 2023.12.05 김건학
+                        // Route_Line --> Route 수정
+
+                        // 2023.12.08 김건학
+                        // start, end도 localStorage에 저장
+                        localStorage.setItem('Route', JSON.stringify(Click_Path));
+                        localStorage.setItem('start', start);
+                        localStorage.setItem('end', end);
+
+                        // 페이지 변경
+                        var newPageURL = 'https://dydtkwk.ddns.net:1521/main/POI/result/pposong';
+                        window.location.href = newPageURL;
+                    }).catch(function (error) {
+                        console.error('Error:', error);
+                    });
+                });
+
+            });
+        });
+    </script>
+
     <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
     <script src="/js/back.js"></script>
-    <script>
-        function post요청보내기(url, routeValue) {
-            const form = document.createElement("form");
-            form.method = "POST";
-            form.action = url;
-            document.body.appendChild(form);
-            // Route 값을 추가하는 hidden input 필드 생성
-            const routeInput = document.createElement("input");
-            routeInput.type = "hidden";
-            routeInput.name = "Route";
-            routeInput.value = routeValue;
-            form.appendChild(routeInput);
-            console.log("POST");
-            form.submit();
-        }
-    </script>
 </body>
 
 </html>

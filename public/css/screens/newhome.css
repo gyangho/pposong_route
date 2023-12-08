@@ -1,0 +1,120 @@
+.newhome-screen {
+    margin-top: -15px;
+}
+
+#map {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    /* viewport의 가로 너비에 맞춤 */
+    max-width: 100%;
+}
+
+#map .time-nav {
+    background-color: transparent;
+    margin-top: 100px;
+    padding: 15px 10px;
+}
+
+#map .time-nav__btn {
+    cursor: pointer;
+    background-color: white;
+    padding: 7px;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0px 0px 3px 1.5px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    font-size: 13px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+#map .time-nav__btn.clicked {
+    transition: background-color 0.2s ease-in-out;
+    background-color: var(--yellow);
+}
+
+#map .buttons {
+    padding: 0px 10px 10px 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#map .bookmark-btn,
+.location-btn {
+    cursor: pointer;
+    box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.2);
+    background-color: var(--deepblue);
+    border-radius: 50%;
+    font-size: 16px;
+    /* 가로,세로 정중앙에 배치*/
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+#map .bookmark-btn i {
+    color: white;
+    padding: 10px 12px;
+}
+
+#map .location-btn i {
+    color: var(--yellow);
+    padding: 10px;
+}
+
+#map .fa-bookmark.active {
+    font-weight: 800;
+    color: var(--yellow);
+}
+
+#map .fa-location-crosshairs.active {
+    color: tomato;
+}
+
+#map .bottom.initial {
+    display: none;
+}
+
+#map .bottom {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 30%;
+    max-height: 30%;
+    padding: 40px 0px 20px 0px;
+    background-color: white;
+    border-radius: 25px 25px 0px 0px;
+    animation: slide-down 0.6s forwards;
+    /* 세로 스크롤바만표시 */
+    overflow-y: scroll;
+    /* 혹은 auto */
+}
+
+#map .bottom.active {
+    animation: slide-up 0.6s forwards;
+}
+
+#map .bottom .bookmark-screen {
+    animation: none;
+}
+
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-down {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(100%);
+    }
+}

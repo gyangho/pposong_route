@@ -6,14 +6,12 @@ const bodyParser = require('body-parser');
 const FileStore = require('session-file-store')(session)
 const forecast = require('./API/Ultra_Forecast.js')
 const fs = require('fs');
-const transport = require('./API/public_transport.js')
-const pposongtime = require('./pposongtime.js')
-var calculate = require('./API/cal_time_date.js')
-var authRouter = require('./auth');
-var authCheck = require('./authCheck.js');
-var db = require('./db');
-var path = require('path');
-var POI = require('./API/KAKAO_POI.js');
+const authRouter = require('./auth');
+const authCheck = require('./authCheck.js');
+const db = require('./db');
+const path = require('path');
+const weather = require("./get_weather_Data.js");
+const { createDynamicHTML } = require("./result.js");
 
 //서울 시 내 격자 좌표들
 var locArr =
@@ -25,17 +23,15 @@ var locArr =
     [58, 127], [58, 126], [58, 125], [58, 124],
     [57, 127], [57, 126], [57, 125]]; //30개
 
-const privateKeyPath = './private-key.pem'; // 개인 키 파일 경로
-const certificatePath = './certificate.pem'; // 인증서 파일 경로
+const privateKeyPath = '../Key/private-key.pem'; // 개인 키 파일 경로
+const certificatePath = '../Key/certificate.pem'; // 인증서 파일 경로
 
 const privateKey = fs.readFileSync(privateKeyPath, 'utf8');
 const certificate = fs.readFileSync(certificatePath, 'utf8');
-
 const credentials = {
     key: privateKey,
     cert: certificate,
 };
-
 
 const app = express()
 const port = 1521
@@ -77,6 +73,39 @@ function leadingZeros(n, digits) {
     return zero + n;
 }
 
+async function getWeatherDataAndRenderPage(filePath, res) {
+    var grid_data = [];
+    try {
+        for (var idx = 0; idx < 30; idx++) {
+            var data = await weather.get_6weather_Data(locArr[idx][0], locArr[idx][1]);
+            grid_data.push(data);
+        }
+
+        fs.readFile(filePath, "utf8", (err, data) => {
+            if (err) {
+                res.status(500).send("Error reading file");
+            } else {
+                const update_data = data.replace(`{{grid_data}}`, JSON.stringify(grid_data));
+                res.send(update_data);
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error getting data");
+    }
+}
+
+function queryAsync(sql, params) {
+    return new Promise((resolve, reject) => {
+        db.query(sql, params, (error, results, fields) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
 
 
 //함수 끝
@@ -109,12 +138,13 @@ app.get('/', (req, res) => {
 app.use('/auth', authRouter);
 
 // 메인 페이지
-app.get('/main', (req, res) => {
+app.get('/main', async (req, res) => {
     if (!authCheck.isOwner(req, res)) {  // 로그인 안되어있으면 로그인 페이지로 이동시킴
         res.redirect('/auth/login');
         return false;
     }
-    res.sendFile(path.join(__dirname, '/views/main.html'));
+    const filePath = path.join(__dirname, "/views/map.html");
+    await getWeatherDataAndRenderPage(filePath, res);
 })
 
 //마이페이지
@@ -135,8 +165,6 @@ app.get('/main/mypage', (req, res) => {
 
 //북마크
 app.get('/main/mypage/bookmark', async (req, res) => {
-
-    let stime = getTimeStamp(1) + "1200";
     const filePath = path.join(__dirname, '/views/bookmark.html');
     let Routes = {};
     try {
@@ -168,367 +196,77 @@ app.get('/main/mypage/bookmark', async (req, res) => {
 
 //장소 검색
 app.get('/main/POI', async (req, res) => {
-
-    let stime = getTimeStamp(1) + "1200";
-    let itime = parseInt(stime, 10);
-    const filePath = path.join(__dirname, '/views/mainFunc.html');
-    let Routes = {};
-    fs.readFile(filePath, 'utf8', (err, data) => {
+    const filePath = path.join(__dirname, "/views/mainFunc.html");
+    fs.readFile(filePath, "utf8", (err, data) => {
         if (err) {
-            res.status(500).send('Error reading file');
-        }
-        else {
+            res.status(500).send("Error reading file");
+        } else {
             res.send(data);
         }
     });
-
-    /*
-    let stime = getTimeStamp(1) + "1200";
-    let itime = parseInt(stime, 10);
-    const filePath = path.join(__dirname, '/views/mainFunc.html');
-    let Routes = {};
-    try {
-        Routes = await transport.GetRoot(126.95976562412, 37.494571847859, 126.94765009467245, 37.562544705628845) //신반포역->정보관
-        if (Routes.length < 1) {
-            //경로없음
-            res.send("경로없음");
-        }
-        else {
-        }
-    }
-    catch (error) {
-        console.error(error);
-    };
-    let sRoutes = JSON.stringify(Routes[0]);
-    let mRoutes = sRoutes.replace(/"/g, '@@');
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Error reading file');
-        }
-        else {
-            // 외부 HTML 파일 내부의 {T#}을 대체하여 전송
-            const modifiedData = data
-                .replace(/{{R}}/g, mRoutes);
-            res.send(modifiedData);
-        }
-    });*/
-})
-
-//검색 제출
-app.post('/main/POI', function (request, response) {
-    var input = request.body.location;
-    try {
-        const places = getPlacesFromInput(input);
-        if (places.length > 0) {
-            for (let poi_idx = 0; poi_idx < places.length; poi_idx++) {
-                console.log(`장소[${poi_idx}]`);
-                console.log(places[poi_idx]);
-                console.log();
-            }
-        } else {
-            console.log("검색 결과가 없습니다.");
-        }
-    } catch (err) {
-        console.error(err);
-    }
 })
 
 //검색결과
 app.get('/main/POI/result', async (req, res) => {
-    let stime = getTimeStamp(1) + "1200";
-    let itime = parseInt(stime, 10);
-    const filePath = path.join(__dirname, '/views/result.html');
-    let Routes = {};
+    let resource = req.query;
     try {
-        Routes = await transport.GetRoot(126.95976562412, 37.494571847859, 126.94765009467245, 37.562544705628845) //신반포역->정보관
-        //console.log(Routes[0]);
-        if (Routes.length < 1) {
-            //경로없음
-            res.send("경로없음");
-        }
-        else {
-        }
+        const html = await createDynamicHTML(resource);
+        res.send(html);
+    } catch (error) {
+        console.error("Error handling request:", error);
+        res.status(500).send("Internal Server Error");
     }
-    catch (error) {
-        console.error(error);
-    };
-    let sRoutes = JSON.stringify(Routes[0]);
-    let mRoutes = sRoutes.replace(/"/g, '@@');
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Error reading file');
-        }
-        else {
-            // 외부 HTML 파일 내부의 {T#}을 대체하여 전송
-            const modifiedData = data
-                .replace(/{{R}}/g, mRoutes)
-                .replace('{{T}}', Math.round(Routes[0].totalTime / 60));
-            res.send(modifiedData);
-        }
-    });
 })
 
 //뽀송타임
+app.get("/main/POI/result/pposong", async (req, res) => {
+    const filePath = path.join(__dirname, "/views/pposong.html");
+    await getWeatherDataAndRenderPage(filePath, res);
+});
 
-app.post('/main/POI/result/pposongtime1', async (req, res) => {
-    const input_date = parseInt(getTimeStamp(1), 10);
-    const input_time = getTimeStamp(2);
-    const time = getTimeStamp(3);
-    const filePath = path.join(__dirname, '/views/pposongtime.html');
-    let sRoutes = req.body.Route;
-    let Routes = JSON.parse(sRoutes.replace(/@@/g, '"'));
-    let pposong_results = {};
-    let modifiedData;
-    pposong_results = await pposongtime.cal_pposong_time(input_date, input_time, Routes);
-    console.log(pposong_results.pposong_results1);
-    //console.log(pposong_results.pposong_results1[0]);
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Error reading file');
+// 2023.12.08 김건학
+// pposong.html에서 보낸 도보 데이터 받기, db검색 후 파싱, pposong.html로 데이터 전송
+
+// 2023.12.08 김건학
+// pposong.html에서 보낸 도보 데이터 받기, db검색 후 파싱, pposong.html로 데이터 전송
+// 한 time의 데이터만 받아오는 기존 방식을 4 time 데이터 모두 받게 수정
+app.post("/main/POI/result/pposong/cal", async (req, res) => {
+    const receivedData = req.body;
+    var resultData = [];
+    try {
+        for (const walkData of receivedData.WalkData) {
+            const sectionData = [];
+            var sum_RN1 = 0;
+            for (const section of walkData) {
+                const weatherData = await queryAsync(
+                    "SELECT * FROM FORECAST WHERE TIME = ? AND X = ? AND Y =  ?",
+                    [section.basetime, section.X, section.Y]
+                );
+                var section_RN1 = (weatherData[0].RN1 * section.sectiontime) / 60;
+                sum_RN1 += section_RN1;
+                sectionData.push({
+                    DATE: weatherData[0].DATE,
+                    REH: weatherData[0].REH,
+                    RN1: weatherData[0].RN1,
+                    T1H: weatherData[0].T1H,
+                    TIME: weatherData[0].TIME,
+                    WSD: weatherData[0].WSD,
+                    X: weatherData[0].X,
+                    Y: weatherData[0].Y,
+                    section_RN1: section_RN1,
+                });
+            }
+            var WalkWeatherData = {
+                sum_RN1: sum_RN1,
+                walkData: sectionData,
+            };
+            resultData.push(WalkWeatherData);
         }
-        else {
-            // 외부 HTML 파일 내부의 {T#}을 대체하여 전송
-            let D = data
-                .replace('{{T}}', pposong_results.pposong_results1[0][0].TRAVEL_TIME
-                    + pposong_results.pposong_results1[0][1].TRAVEL_TIME
-                    + pposong_results.pposong_results1[0][2].TRAVEL_TIME
-                    + pposong_results.pposong_results1[0][3].TRAVEL_TIME
-                    + pposong_results.pposong_results1[0][4].TRAVEL_TIME)
-                .replace('{{WT}}', pposong_results.pposong_results2[0].WTIME)
-                .replace(/{{R}}/g, sRoutes)
-                .replace(/{T0}/g, time[0])
-                .replace(/{T1}/g, time[1])
-                .replace(/{T2}/g, time[2])
-                .replace(/{T3}/g, time[3])
-                .replace(/{R0}/g, pposong_results.pposong_results2[0].RN1_SUM)
-                .replace(/{R1}/g, pposong_results.pposong_results2[1].RN1_SUM)
-                .replace(/{R2}/g, pposong_results.pposong_results2[2].RN1_SUM)
-                .replace(/{R3}/g, pposong_results.pposong_results2[3].RN1_SUM);
-            modifiedData = D
-                .replace('{S0}', pposong_results.pposong_results1[0][0].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][0].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][0].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][0].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[0][0].RN1 * pposong_results.pposong_results1[0][0].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][1].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][1].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][1].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][1].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[0][2].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][2].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][2].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][2].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[0][2].RN1 * pposong_results.pposong_results1[0][2].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][3].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][3].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][3].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][3].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[0][4].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][4].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][4].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[0][4].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[0][4].RN1 * pposong_results.pposong_results1[0][4].TRAVEL_TIME);
-
-            res.send(modifiedData);
-        }
-    });
-})
-
-app.post('/main/POI/result/pposongtime2', async (req, res) => {
-    await console.log("POST");
-    const input_date = parseInt(getTimeStamp(1), 10);
-    const input_time = getTimeStamp(2);
-    const time = getTimeStamp(3);
-    const filePath = path.join(__dirname, '/views/pposongtime.html');
-    let sRoutes = req.body.Route;
-    let Routes = JSON.parse(sRoutes.replace(/@@/g, '"'));
-    let pposong_results = {};
-    let modifiedData;
-    pposong_results = await pposongtime.cal_pposong_time(input_date, input_time, Routes);
-    //console.log(Routes);
-    console.log(pposong_results.pposong_results1[0][0]);
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Error reading file');
-        }
-        else {
-            // 외부 HTML 파일 내부의 {T#}을 대체하여 전송
-            let D = data
-                .replace('{{T}}', pposong_results.pposong_results1[1][0].TRAVEL_TIME
-                    + pposong_results.pposong_results1[1][1].TRAVEL_TIME
-                    + pposong_results.pposong_results1[1][2].TRAVEL_TIME
-                    + pposong_results.pposong_results1[1][3].TRAVEL_TIME
-                    + pposong_results.pposong_results1[1][4].TRAVEL_TIME)
-                .replace('{{WT}}', pposong_results.pposong_results2[0].WTIME)
-                .replace(/{{R}}/g, sRoutes)
-                .replace(/{T0}/g, time[0])
-                .replace(/{T1}/g, time[1])
-                .replace(/{T2}/g, time[2])
-                .replace(/{T3}/g, time[3])
-                .replace(/{R0}/g, pposong_results.pposong_results2[0].RN1_SUM)
-                .replace(/{R1}/g, pposong_results.pposong_results2[1].RN1_SUM)
-                .replace(/{R2}/g, pposong_results.pposong_results2[2].RN1_SUM)
-                .replace(/{R3}/g, pposong_results.pposong_results2[3].RN1_SUM);
-            modifiedData = D
-                .replace('{S0}', pposong_results.pposong_results1[1][0].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][0].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][0].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][0].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[1][0].RN1 * pposong_results.pposong_results1[1][0].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][1].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][1].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][1].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][1].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[1][2].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][2].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][2].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][2].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[1][2].RN1 * pposong_results.pposong_results1[1][2].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][3].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][3].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][3].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][3].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[1][4].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][4].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][4].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[1][4].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[1][4].RN1 * pposong_results.pposong_results1[1][4].TRAVEL_TIME);
-
-            res.send(modifiedData);
-        }
-    });
-})
-
-app.post('/main/POI/result/pposongtime3', async (req, res) => {
-    await console.log("POST");
-    const input_date = parseInt(getTimeStamp(1), 10);
-    const input_time = getTimeStamp(2);
-    const time = getTimeStamp(3);
-    const filePath = path.join(__dirname, '/views/pposongtime.html');
-    let sRoutes = req.body.Route;
-    let Routes = JSON.parse(sRoutes.replace(/@@/g, '"'));
-    let pposong_results = {};
-    let modifiedData;
-    pposong_results = await pposongtime.cal_pposong_time(input_date, input_time, Routes);
-    //console.log(Routes);
-    console.log(pposong_results.pposong_results1[0][0]);
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Error reading file');
-        }
-        else {
-            // 외부 HTML 파일 내부의 {T#}을 대체하여 전송
-            let D = data
-                .replace('{{T}}', pposong_results.pposong_results1[2][0].TRAVEL_TIME
-                    + pposong_results.pposong_results1[2][1].TRAVEL_TIME
-                    + pposong_results.pposong_results1[2][2].TRAVEL_TIME
-                    + pposong_results.pposong_results1[2][3].TRAVEL_TIME
-                    + pposong_results.pposong_results1[2][4].TRAVEL_TIME)
-                .replace('{{WT}}', pposong_results.pposong_results2[0].WTIME)
-                .replace(/{{R}}/g, sRoutes)
-                .replace(/{T0}/g, time[0])
-                .replace(/{T1}/g, time[1])
-                .replace(/{T2}/g, time[2])
-                .replace(/{T3}/g, time[3])
-                .replace(/{R0}/g, pposong_results.pposong_results2[0].RN1_SUM)
-                .replace(/{R1}/g, pposong_results.pposong_results2[1].RN1_SUM)
-                .replace(/{R2}/g, pposong_results.pposong_results2[2].RN1_SUM)
-                .replace(/{R3}/g, pposong_results.pposong_results2[3].RN1_SUM);
-            modifiedData = D
-                .replace('{S0}', pposong_results.pposong_results1[2][0].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][0].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][0].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][0].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[2][0].RN1 * pposong_results.pposong_results1[2][0].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][1].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][1].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][1].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][1].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[2][2].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][2].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][2].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][2].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[2][2].RN1 * pposong_results.pposong_results1[2][2].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][3].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][3].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][3].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][3].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[2][4].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][4].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][4].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[2][4].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[2][4].RN1 * pposong_results.pposong_results1[2][4].TRAVEL_TIME);
-
-            res.send(modifiedData);
-        }
-    });
-})
-
-app.post('/main/POI/result/pposongtime4', async (req, res) => {
-    await console.log("POST");
-    const input_date = parseInt(getTimeStamp(1), 10);
-    const input_time = getTimeStamp(2);
-    const time = getTimeStamp(3);
-    const filePath = path.join(__dirname, '/views/pposongtime.html');
-    let sRoutes = req.body.Route;
-    let Routes = JSON.parse(sRoutes.replace(/@@/g, '"'));
-    let pposong_results = {};
-    let modifiedData;
-    pposong_results = await pposongtime.cal_pposong_time(input_date, input_time, Routes);
-    //console.log(Routes);
-    console.log(pposong_results.pposong_results1[0][0]);
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Error reading file');
-        }
-        else {
-            // 외부 HTML 파일 내부의 {T#}을 대체하여 전송
-            let D = data
-                .replace('{{T}}', pposong_results.pposong_results1[3][0].TRAVEL_TIME
-                    + pposong_results.pposong_results1[3][1].TRAVEL_TIME
-                    + pposong_results.pposong_results1[3][2].TRAVEL_TIME
-                    + pposong_results.pposong_results1[3][3].TRAVEL_TIME
-                    + pposong_results.pposong_results1[3][4].TRAVEL_TIME)
-                .replace('{{WT}}', pposong_results.pposong_results2[0].WTIME)
-                .replace(/{{R}}/g, sRoutes)
-                .replace(/{T0}/g, time[0])
-                .replace(/{T1}/g, time[1])
-                .replace(/{T2}/g, time[2])
-                .replace(/{T3}/g, time[3])
-                .replace(/{R0}/g, pposong_results.pposong_results2[0].RN1_SUM)
-                .replace(/{R1}/g, pposong_results.pposong_results2[1].RN1_SUM)
-                .replace(/{R2}/g, pposong_results.pposong_results2[2].RN1_SUM)
-                .replace(/{R3}/g, pposong_results.pposong_results2[3].RN1_SUM);
-            modifiedData = D
-                .replace('{S0}', pposong_results.pposong_results1[3][0].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][0].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][0].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][0].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[3][0].RN1 * pposong_results.pposong_results1[3][0].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][1].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][1].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][1].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][1].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[3][2].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][2].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][2].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][2].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[3][2].RN1 * pposong_results.pposong_results1[3][2].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][3].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][3].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][3].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][3].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[3][4].TRAVEL_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][4].START_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][4].END_TIME)
-                .replace('{S0}', pposong_results.pposong_results1[3][4].RN1)
-                .replace('{S0}', pposong_results.pposong_results1[3][4].RN1 * pposong_results.pposong_results1[3][4].TRAVEL_TIME);
-
-            res.send(modifiedData);
-        }
-    });
-})
-
+    } catch (error) {
+        console.error(error);
+    }
+    res.json({ response: resultData });
+});
 
 httpsServer.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

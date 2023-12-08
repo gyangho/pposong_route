@@ -1,5 +1,5 @@
 .route-list {
-    background-color:rgba(159, 216, 246, 0.2);
+    background-color: rgba(159, 216, 246, 0.2);
     border-radius: 50px;
     border-top-left-radius: 0px;
     border-bottom-left-radius: 0px;
@@ -42,6 +42,7 @@
 
 .route-list__vehicle-info {
     color: var(--deepblue);
+    width: 100%;
 }
 
 .route-list__vehicle i {
@@ -50,4 +51,58 @@
 
 .route-list__vehicle-stop {
     margin-left: 10px;
+}
+
+.route-list__bar {
+    margin-left: 20px;
+    z-index: 10;
+    bottom: 0px;
+    content: "";
+    padding-top: 0.5%;
+    /*padding-top값 수정 20203.12.01 채수아*/
+    padding-left: 1%;
+    position: relative;
+}
+
+
+.route-list__bar::before {
+    content: "🔻";
+    position: absolute;
+    left: -11px;
+    top: -2px;
+    /* 내용이 선 왼쪽에 위치하도록 조절 (음수 값은 선 왼쪽으로 이동) */
+}
+
+/* .route-list__bar::before {
+    content: "\2022";
+    /* 유니코드로 점(.)을 나타냄 */
+/* display: inline-block;
+margin-right: 5px;
+/* 추가적인 여백 조절 가능 */
+
+
+.route-list__bar-detail {
+    margin-right: 10px;
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
+.reset {
+    padding: 0px;
+    display: flex;
+    font-size: 18px;
+}
+
+/*reset_bar 추가
+/*수정 2023.12.01 채수아*/
+.reset_bar {
+    padding: 0px;
+    display: flex;
+    font-size: 18px;
+    height: 100%;
+}
+
+.icon {
+    float: left;
+    height: 0.001%;
 }

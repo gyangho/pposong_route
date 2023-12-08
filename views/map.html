@@ -1,0 +1,109 @@
+<!--map.html(by 김건학) & newhome.html(by 안아영) 합친 코드-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<link rel="stylesheet" href="/css/styles.css" />
+	<!-- jQuery UI의 Autocomplete 기능 사용 (자동완성 기능)-->
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>Home</title>
+</head>
+
+<body>
+	<header class="alt-header">
+		<div class="alt-header__column">
+			<i class="fa-solid fa-angle-left fa-xl"></i>
+		</div>
+		<div class="alt-header__column">
+			<h1 class="alt-header__title">뽀송길</h1>
+		</div>
+		<div class="alt-header__column">
+			<!-- 헤더 우측에 위치한 홈/마이페이지 버튼 -->
+			<nav class="screen-header__menu">
+				<ul class="screen-header__menu-list">
+					<li class="screen-header__menu-btn">
+						<a class="screen-header__menu-link" href="/main"><i class="fa-solid fa-house fa-lg"></i></a>
+					</li>
+					<li class="screen-header__menu-btn">
+						<a class="screen-header__menu-link" href="/main/mypage"><i
+								class="fa-solid fa-circle-user fa-lg"></i></a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<main class="newhome-screen">
+		<!--카카오맵 지도-->
+		<div id="map" style="height:100vh;">
+			<!-- 메인 홈 화면 출발지/도착지 검색 창-->
+			<form class="searchBox" action="/main/POI/result" method="get" style="position: absolute; z-index: 2;">
+				<!--수정 필요-->
+				<div class="searchBox-component">
+					<input id="start-field" autocomplete="off" name="origin" required type="text"
+						placeholder="출발지 검색" />
+					<input id="start-lat" type="hidden" name="start_lat">
+					<input id="start-lon" type="hidden" name="start_lon">
+
+					<input id="end-field" autocomplete="off" name="destination" required type="text"
+						placeholder="목적지 검색" />
+					<input id="end-lat" type="hidden" name="end_lat">
+					<input id="end-lon" type="hidden" name="end_lon">
+				</div>
+				<div class="searchBox-component">
+					<input type="submit" value="길찾기" />
+				</div>
+			</form>
+
+			<!--1시간 간격 강수량 버튼-->
+			<nav class="time-nav" style="z-index: 2">
+				<ul class="time-nav__list">
+					<li class="time-nav__btn" onclick="clickedBtn(0)" style="z-index:2">00:00</li>
+					<li class="time-nav__btn" onclick="clickedBtn(1)" style="z-index:2">01:00</li>
+					<li class="time-nav__btn" onclick="clickedBtn(2)" style="z-index:2">02:00</li>
+					<li class="time-nav__btn" onclick="clickedBtn(3)" style="z-index:2">03:00</li>
+					<li class="time-nav__btn" onclick="clickedBtn(4)" style="z-index:2">04:00</li>
+					<li class="time-nav__btn" onclick="clickedBtn(5)" style="z-index:2">05:00</li>
+				</ul>
+			</nav>
+			<!--우측 상단 북마크 버튼-->
+			<div class="buttons" style="z-index: 2">
+				<div class="bookmark-btn" onclick="toggleBookmark()">
+					<i class="fa-regular fa-bookmark"></i>
+				</div>
+			</div>
+			<!--우측 상단 위치 버튼-->
+			<div class="buttons" style="z-index: 2">
+				<div class="location-btn" onclick="showLocation()">
+					<i class="fa-solid fa-location-crosshairs"></i>
+				</div>
+			</div>
+			<!--하단 info component-->
+			<div class="bottom initial" style="z-index: 2">
+			</div>
+		</div>
+	</main>
+
+	<!--js-->
+	<script>
+		const receivedData = JSON.parse(`{{grid_data}}`); // 템플릿 문법이라 js파일에 추가 시 오류 발생하므로 html파일에 넣어줘야 함 (js파일로 분리 하면 X)
+	</script>
+	<!--카카오맵 API-->
+	<script type="text/javascript"
+		src="//dapi.kakao.com/v2/maps/sdk.js?appkey=819399e434bd90427a278678b6e68250"></script>
+	<!--아이콘-->
+	<script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
+	<script src="/js/map_main.js"></script>
+	<script src="/js/autocomplete.js" type="module"></script>
+	<script src="/js/back.js"></script>
+	<script src="/js/bookmark.js"></script>
+	<script src="/js/newhome.js"></script>
+</body>
+
+</html>

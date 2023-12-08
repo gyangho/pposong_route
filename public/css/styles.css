@@ -10,6 +10,7 @@
 @import "components/specific-component.css";
 @import "components/alt-screen-header.css";
 @import "components/footer.css";
+@import "components/search-box.css";
 
 /* Screens */
 @import "screens/intro.css";
@@ -19,17 +20,20 @@
 @import "screens/result.css";
 @import "screens/home.css";
 @import "screens/welcome.css";
+@import "screens/newhome.css";
 
 body {
     /*font-family: 'Open Sans', sans-serif;*/
     font-family: 'Pangolin', 'Open Sans', sans-serif, cursive;
 }
+
 /* Page Animation */
 @keyframes slideInFromBottom {
     0% {
         transform: translateY(30px);
         opacity: 0;
     }
+
     100% {
         transform: translateY(0);
         opacity: 1;
@@ -40,4 +44,3 @@ body {
     padding: 0px 20px;
     animation: slideInFromBottom 1s ease-out;
 }
-

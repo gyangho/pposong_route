@@ -1,0 +1,94 @@
+.route-list {
+    background-color: rgba(159, 216, 246, 0.2);
+    border-radius: 50px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    margin-bottom: 15px;
+    border-left: 9px solid var(--skyblue);
+}
+
+.route-list__column {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 20px;
+    border-bottom: 2px dotted rgba(0, 0, 0, 0.3);
+}
+
+.route-list__total-time {
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.route-list__walk-time {
+    padding-top: 10px;
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+.route-list__bookmark i {
+    margin-right: 15px;
+    font-size: 25px;
+    color: var(--yellow);
+}
+
+.route-list__vehicle {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+}
+
+.route-list__vehicle-info {
+    color: var(--deepblue);
+    width: 100%;
+}
+
+.route-list__vehicle i {
+    margin-right: 8px;
+}
+
+.route-list__vehicle-stop {
+    margin-left: 10px;
+}
+
+.route-list__bar {
+    margin-left: 20px;
+    z-index: 10;
+    bottom: 0px;
+    content: "";
+    padding-top: 0.5%;
+    /*padding-top값 수정 20203.12.01 채수아*/
+    padding-left: 1%;
+    position: relative;
+}
+
+.route-list__bar::before {
+    content: "🔻";
+    position: absolute;
+    left: -11px;
+    top: -2px;
+    /* 내용이 선 왼쪽에 위치하도록 조절 (음수 값은 선 왼쪽으로 이동) */
+}
+
+.route-list__bar-detail {
+    margin-right: 10px;
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
+.reset {
+    padding: 0px;
+    display: flex;
+    font-size: 18px;
+}
+
+/*reset_bar 추가
+/*수정 2023.12.01 채수아*/
+.reset_bar {
+    padding: 0px;
+    display: flex;
+    font-size: 18px;
+    height: 100%;
+}

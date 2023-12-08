@@ -4,8 +4,8 @@
 <head>
 	<meta charset="UTF-8">
 	<title>MainFuncPage</title>
-	<link rel="stylesheet" href="/css/mainFunc-style.css">
 
+	<link rel="stylesheet" href="/css/mainFunc-style.css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -97,7 +97,7 @@
 	</div>
 
 	<script type="module">
-		import { GetPOI } from "/js/mainFunc.js";
+		import { GetPOI } from '/js/mainFunc.js';
 
 		function initAutocomplete(inputElement, latitude, longitude) {
 			$(inputElement).autocomplete({
@@ -134,7 +134,7 @@
 				minLength: 1,
 				delay: 50,
 				close: function (event, ui) {
-					autocompleteIsOpen = false;
+					//autocompleteIsOpen = false;
 					console.log(event);
 				},
 			}).autocomplete("instance")._renderItem = function (ul, item) {
