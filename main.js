@@ -1,15 +1,13 @@
 const express = require('express')
 const https = require('https')
 const session = require('express-session')
-const schedule = require('node-schedule')
 const bodyParser = require('body-parser');
 const FileStore = require('session-file-store')(session)
-const forecast = require('./API/Ultra_Forecast.js')
 const fs = require('fs');
+const path = require('path');
 const authRouter = require('./auth');
 const authCheck = require('./authCheck.js');
 const db = require('./db');
-const path = require('path');
 const weather = require("./get_weather_Data.js");
 const { createDynamicHTML } = require("./result.js");
 
@@ -22,56 +20,6 @@ var locArr =
     [59, 128], [59, 127], [59, 126], [59, 125], [59, 124],
     [58, 127], [58, 126], [58, 125], [58, 124],
     [57, 127], [57, 126], [57, 125]]; //30개
-
-const privateKeyPath = '../Key/private-key.pem'; // 개인 키 파일 경로
-const certificatePath = '../Key/certificate.pem'; // 인증서 파일 경로
-
-const privateKey = fs.readFileSync(privateKeyPath, 'utf8');
-const certificate = fs.readFileSync(certificatePath, 'utf8');
-const credentials = {
-    key: privateKey,
-    cert: certificate,
-};
-
-const app = express()
-const port = 1521
-
-const httpsServer = https.createServer(credentials, app);
-
-//날짜, 시간 구하기
-function getTimeStamp(i) {
-    var d = new Date();
-    if (i == 1) {
-        var s =
-            leadingZeros(d.getFullYear(), 4) + leadingZeros(d.getMonth() + 1, 2) + leadingZeros(d.getDate(), 2);
-    }
-    else if (i == 2) {
-        var s = leadingZeros(d.getHours(), 2) + leadingZeros(d.getMinutes(), 2);
-    }
-    else if (i == 3) {
-        let s0 = leadingZeros(d.getHours(), 2) + ":" + leadingZeros(d.getMinutes(), 2);
-        d.setMinutes(d.getMinutes() + 30);
-        let s1 = leadingZeros(d.getHours(), 2) + ":" + leadingZeros(d.getMinutes(), 2);
-        d.setMinutes(d.getMinutes() + 30);
-        let s2 = leadingZeros(d.getHours(), 2) + ":" + leadingZeros(d.getMinutes(), 2);
-        d.setMinutes(d.getMinutes() + 30);
-        let s3 = leadingZeros(d.getHours(), 2) + ":" + leadingZeros(d.getMinutes(), 2);
-        var s = [s0, s1, s2, s3];
-    }
-    return s;
-}
-
-function leadingZeros(n, digits) {
-    var zero = '';
-    n = n.toString();
-
-    if (n.length < digits) {
-        for (i = 0; i < digits - n.length; i++)
-            zero += '0';
-    }
-
-    return zero + n;
-}
 
 async function getWeatherDataAndRenderPage(filePath, res) {
     var grid_data = [];
@@ -107,21 +55,41 @@ function queryAsync(sql, params) {
     });
 }
 
-
 //함수 끝
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+const privateKeyPath = '../Key/private-key.pem'; // 개인 키 파일 경로
+const certificatePath = '../Key/certificate.pem'; // 인증서 파일 경로
 
+const privateKey = fs.readFileSync(privateKeyPath, 'utf8');
+const certificate = fs.readFileSync(certificatePath, 'utf8');
+const credentials = {
+    key: privateKey,
+    cert: certificate,
+};
+
+const app = express()
+const port = 1521
+const httpsServer = https.createServer(credentials, app);
+
+//2023.12.10 이경호
+//POST /main/POI/result 에서 routes 값 받아오기 위해 최대길이 늘림
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '/public')));
 app.use('/script', express.static(__dirname + '/public'));
 
 app.use(session({
     secret: 'SECRETKEY',	// 비밀키
     resave: false,
-    saveUninitialized: true,
-    store: new FileStore(),
+    saveUninitialized: false,
+    store: new FileStore({ reapInterval: 60 * 60 }), //세션 파일 삭제 주기
+    cookie: {
+        expires: 1000 * 60 * 60, //세션유지 1시간
+    },
 }))
+
+// 인증 라우터
+app.use('/auth', authRouter);
 
 //첫페이지
 app.get('/', (req, res) => {
@@ -133,9 +101,6 @@ app.get('/', (req, res) => {
         return false;
     }
 })
-
-// 인증 라우터
-app.use('/auth', authRouter);
 
 // 메인 페이지
 app.get('/main', async (req, res) => {
@@ -207,8 +172,8 @@ app.get('/main/POI', async (req, res) => {
 })
 
 //검색결과
-app.get('/main/POI/result', async (req, res) => {
-    let resource = req.query;
+app.post('/main/POI/result', async (req, res) => {
+    let resource = req.body;
     try {
         const html = await createDynamicHTML(resource);
         res.send(html);
@@ -270,42 +235,4 @@ app.post("/main/POI/result/pposong/cal", async (req, res) => {
 
 httpsServer.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
-    schedule.scheduleJob('50 0,14,20,30,40,50 * * * *', async function () {
-        console.log('Forecast Updating Started....');
-        const input_date = getTimeStamp(1);
-        const input_time = getTimeStamp(2);
-
-        for (let i = 0; i < 30; i++) {
-            try {
-                const input_x = locArr[i][0];
-                const input_y = locArr[i][1];
-
-                var ultra_forecast_datas = await forecast.get_Ultra_Forecast_Data(input_date, input_time, input_x, input_y);
-                for (let j = 0; j < 6; j++) {
-                    try {
-                        db.query('INSERT INTO foreCast (DATE, TIME, X, Y, RN1, T1H, REH, WSD, UPTIME) VALUES(?,?,?,?,?,?,?,?,?)',
-                            [ultra_forecast_datas[j].Date, ultra_forecast_datas[j].Time, ultra_forecast_datas[j].X, ultra_forecast_datas[j].Y,
-                            ultra_forecast_datas[j].RN1, ultra_forecast_datas[j].T1H, ultra_forecast_datas[j].REH, ultra_forecast_datas[j].WSD, input_time],
-                            await function (error, results, fields) {
-                                if (error) throw error;
-                            });
-                    }
-                    catch (error) {
-                        console.error(error);
-                    }
-                }
-            }
-            catch (error) {
-                console.log("ERROR MERGED");
-                console.error(error);
-                i--;
-            };
-        }
-
-        db.query('DELETE FROM FORECAST WHERE UPTIME != ?', [input_time],
-            await function (error, results, fields) {
-                if (error) throw error;
-            });
-        console.log("DONE!");
-    });
 })

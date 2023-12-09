@@ -13,25 +13,20 @@ class Place {
 }
 
 export async function GetPOI(input) {
-  const url = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(input)}`;
-  const config = {
-    headers: {
-      'Authorization': `KakaoAK fb7f423e7875f1d8206180cb55202084`
-    },
-  };
+  //2023.12.09. 이경호
+  //url API Gateway 주소로 수정
+  const url = `https://dydtkwk.ddns.net/api/POI?query=${encodeURIComponent(input)}`;
 
   try {
-    const response = await axios.get(url, config);
+    const response = await axios.get(url);
     if (response.status == 200) {
       const Places = [];
+      console.log(response.data.documents);
       response.data.documents.forEach(place => {
         const location = dfs_xy_conv("toXY", place.y, place.x);
         const aPlace = new Place(place.place_name, place.address_name, location.x, location.y, location.lat, location.lon);
         Places.push(aPlace);
       });
-      Places.forEach(p => {
-        console.log(p);
-      })
       return Places;
     }
     else {

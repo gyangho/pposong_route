@@ -5,7 +5,9 @@
 // 루트 데이터에 누락된 출발지, 도착지 이름 localStorage를 이용해 처리
 function click_route() {
     window.addEventListener("DOMContentLoaded", function () {
-        var Routes = JSON.parse(localStorage.getItem("Route"));
+        //2023.12.10 이경호
+        //localStorage --> sessionStorage 변경
+        var Routes = JSON.parse(sessionStorage.getItem("Route"));
 
         var PATH = "";
         var SUBPATH = "";
@@ -104,11 +106,11 @@ function click_route() {
                                 <i class="fa-regular fa-star fa-xl"></i>
                             </div>
                         </div>
-                        <div class="route-list__vehicle"> ${this.localStorage.start}</div>
+                        <div class="route-list__vehicle"> ${this.sessionStorage.start}</div>
                         <div class="total">
                             ${SUBPATH}
                         </div>
-                        <div class="route-list__vehicle"> ${this.localStorage.end}</div>
+                        <div class="route-list__vehicle"> ${this.sessionStorage.end}</div>
                     </div>`;
         }
         document.getElementById("dynamicContent").innerHTML = PATH;

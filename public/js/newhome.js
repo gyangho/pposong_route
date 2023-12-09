@@ -1,3 +1,7 @@
+/* 지도 확대/축소 레벨 설정 */
+const ZOOMIN = 8;
+const ZOOMOUT = 4;
+
 /*북마크 기능 */
 function toggleBookmark() { //북마크 버튼 클릭 시 아이콘 효과
     const bottomBox = document.querySelector('.bottom');
@@ -62,6 +66,7 @@ function showLocation() {
             map.setCenter(seoulCenter);
             marker.setMap(null);
             marker = null;
+            map.setLevel(ZOOMIN);
             return;
         }
         // 현위치에 마커 생성
@@ -70,6 +75,7 @@ function showLocation() {
             position: locPosition
         });
         // 지도 중심좌표를 현위치로 변경
+        map.setLevel(ZOOMOUT);
         map.setCenter(locPosition);
     }
 }
@@ -97,3 +103,33 @@ function calculateTime() {
     }
 }
 calculateTime();
+
+
+
+//2023.12.10 이경호
+// 길찾기 버튼 클릭시 Odsay API 호출
+document.querySelector('.searchBox').addEventListener('submit', function (event) {
+    event.preventDefault();
+    async function getRoutes() {
+        let routesfield = document.getElementById('routes');
+        let url = `https://dydtkwk.ddns.net/api/Odsay`;
+        let response = await axios.get(url, {
+            params: {
+                start: document.getElementById('start-field').value,
+                end: document.getElementById('end-field').value,
+                start_lat: document.getElementById('start-lat').value,
+                start_lon: document.getElementById('start-lon').value,
+                end_lat: document.getElementById('end-lat').value,
+                end_lon: document.getElementById('end-lon').value,
+            }
+        });
+        routesfield.value = JSON.stringify(response.data);
+    }
+    getRoutes()
+        .then(() => {
+            event.target.submit();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+});

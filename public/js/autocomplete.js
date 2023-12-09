@@ -35,7 +35,7 @@ function initAutocomplete(inputElement, latitude, longitude) {
         minLength: 1,
         delay: 50,
         close: function (event, ui) {
-            console.log(event);
+            //console.log(event);
         },
     }).autocomplete("instance")._renderItem = function (ul, item) {
         return $("<li>")

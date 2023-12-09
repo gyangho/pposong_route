@@ -4,6 +4,7 @@
 
 <head>
 	<link rel="stylesheet" href="/css/styles.css" />
+	<link rel="icon" href="/image/21.png" type="image/x-icon">
 	<!-- jQuery UI의 Autocomplete 기능 사용 (자동완성 기능)-->
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
@@ -12,7 +13,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<title>Home</title>
+	<title>뽀송길</title>
 </head>
 
 <body>
@@ -43,7 +44,7 @@
 		<!--카카오맵 지도-->
 		<div id="map" style="height:100vh;">
 			<!-- 메인 홈 화면 출발지/도착지 검색 창-->
-			<form class="searchBox" action="/main/POI/result" method="get" style="position: absolute; z-index: 2;">
+			<form class="searchBox" action="/main/POI/result" method="post" style="position: absolute; z-index: 2;">
 				<!--수정 필요-->
 				<div class="searchBox-component">
 					<input id="start-field" autocomplete="off" name="start" required type="text" placeholder="출발지 검색" />
@@ -53,6 +54,7 @@
 					<input id="end-field" autocomplete="off" name="end" required type="text" placeholder="목적지 검색" />
 					<input id="end-lat" type="hidden" name="end_lat">
 					<input id="end-lon" type="hidden" name="end_lon">
+					<input id="routes" type="hidden" name="routes">
 				</div>
 				<div class="searchBox-component">
 					<input type="submit" value="길찾기" id="search-form-submit" />
@@ -93,14 +95,16 @@
 		const receivedData = JSON.parse(`{{grid_data}}`); // 템플릿 문법이라 js파일에 추가 시 오류 발생하므로 html파일에 넣어줘야 함 (js파일로 분리 하면 X)
 	</script>
 	<!--카카오맵 API-->
-	<script type="text/javascript"
-		src="//dapi.kakao.com/v2/maps/sdk.js?appkey=819399e434bd90427a278678b6e68250"></script>
+	<!--2023.12.09 이경호 API GATEWAY로 url 수정-->
+	<script type="text/javascript" src="https://dydtkwk.ddns.net/api/map"></script>
+
 	<!--아이콘-->
 	<script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
 	<script src="/js/map_main.js"></script>
 	<script src="/js/autocomplete.js" type="module"></script>
 	<script src="/js/back.js"></script>
 	<script src="/js/bookmark.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 	<script src="/js/newhome.js"></script>
 </body>
 

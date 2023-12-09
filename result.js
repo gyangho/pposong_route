@@ -1,6 +1,5 @@
 const fs2 = require("fs").promises;
 const path = require("path");
-const transport = require("./API/public_transport.js");
 
 async function readFile(filePath) {
   try {
@@ -15,14 +14,9 @@ async function readFile(filePath) {
 // HTML 요소를 동적으로 생성하는 함수
 async function createDynamicHTML(data) {
   try {
-    var resource = data;
+    let resource = data;
 
-    const Routes = await transport.GetRoot(
-      resource.start_lon,
-      resource.start_lat,
-      resource.end_lon,
-      resource.end_lat
-    );
+    const Routes = JSON.parse(resource.routes);
 
     const filePath = path.join(__dirname, "/views/result.html");
     const fileDataBuffer = await readFile(filePath);
@@ -138,7 +132,9 @@ async function createDynamicHTML(data) {
     const routeJSON = JSON.stringify(Routes);
     const finalTemplate = `${modifiedTemplate}
     <script>
-      var Routes = ${routeJSON}
+      let start = \"${resource.start}\"
+      let end = \"${resource.end}\"
+      let Routes = ${routeJSON}
     </script>`;
     return finalTemplate;
 

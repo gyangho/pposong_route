@@ -13,9 +13,10 @@
 
 <head>
     <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="icon" href="/image/21.png" type="image/x-icon">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Result</title>
+    <title>뽀송길</title>
 </head>
 
 <body>
@@ -27,7 +28,7 @@
         </div>
 
         <div class="status-bar__column">
-            <span>ver 0.5.1</span>
+            <span>ver 0.6.1</span>
 
         </div>
     </div>
@@ -79,12 +80,15 @@
     import { getTimeStamp } from "/js/cal_time.js";
     window.Route_Time = getTimeStamp(3);
 </script>
-<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=819399e434bd90427a278678b6e68250"></script>
+<script type="text/javascript" src="https://dydtkwk.ddns.net/api/map"></script>
 <script>
     // localStorage에서 데이터를 가져옴
     // 2023.12.05 김건학
     // Route_Line --> Route 수정
-    const Route = JSON.parse(localStorage.getItem('Route')) || {};
+
+    //2023.12.10 이경호
+    // localStorage --> sessionStorage
+    const Route = JSON.parse(sessionStorage.getItem('Route')) || {};
     // 지도에 표현할 날씨 데이터들 render
     const receivedData = JSON.parse(`{{grid_data}}`);
 

@@ -35,12 +35,12 @@
     font-size: 15px;
 }
 
-.searchBox-component input[name="origin"] {
+.searchBox-component input[name="start"] {
     margin-bottom: 10px;
     border-radius: 10px 10px 0px 0px;
 }
 
-.searchBox-component input[name="destination"] {
+.searchBox-component input[name="end"] {
     border-radius: 0px 0px 10px 10px;
 }
 
