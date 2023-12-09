@@ -1,12 +1,5 @@
 import { GetPOI } from '../js/mainFunc.js';
 
-const inputField = document.getElementById('start-field');
-const inputField2 = document.getElementById('end-field');
-const startLatField = document.getElementById('start-lat');
-const startLonField = document.getElementById('start-lon');
-const endLatField = document.getElementById('end-lat');
-const endLonField = document.getElementById('end-lon');
-
 function initAutocomplete(inputElement, latitude, longitude) {
     $(inputElement).autocomplete({
         source: async function (request, response) {
@@ -42,7 +35,6 @@ function initAutocomplete(inputElement, latitude, longitude) {
         minLength: 1,
         delay: 50,
         close: function (event, ui) {
-            autocompleteIsOpen = false;
             console.log(event);
         },
     }).autocomplete("instance")._renderItem = function (ul, item) {
@@ -53,5 +45,11 @@ function initAutocomplete(inputElement, latitude, longitude) {
     };
 }
 
+const inputField = document.getElementById('start-field');
+const inputField2 = document.getElementById('end-field');
+const startLatField = document.getElementById('start-lat');
+const startLonField = document.getElementById('start-lon');
+const endLatField = document.getElementById('end-lat');
+const endLonField = document.getElementById('end-lon');
 initAutocomplete(inputField, startLatField, startLonField);
 initAutocomplete(inputField2, endLatField, endLonField);

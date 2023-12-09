@@ -46,18 +46,16 @@
 			<form class="searchBox" action="/main/POI/result" method="get" style="position: absolute; z-index: 2;">
 				<!--수정 필요-->
 				<div class="searchBox-component">
-					<input id="start-field" autocomplete="off" name="origin" required type="text"
-						placeholder="출발지 검색" />
+					<input id="start-field" autocomplete="off" name="start" required type="text" placeholder="출발지 검색" />
 					<input id="start-lat" type="hidden" name="start_lat">
 					<input id="start-lon" type="hidden" name="start_lon">
 
-					<input id="end-field" autocomplete="off" name="destination" required type="text"
-						placeholder="목적지 검색" />
+					<input id="end-field" autocomplete="off" name="end" required type="text" placeholder="목적지 검색" />
 					<input id="end-lat" type="hidden" name="end_lat">
 					<input id="end-lon" type="hidden" name="end_lon">
 				</div>
 				<div class="searchBox-component">
-					<input type="submit" value="길찾기" />
+					<input type="submit" value="길찾기" id="search-form-submit" />
 				</div>
 			</form>
 
