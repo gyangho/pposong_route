@@ -131,3 +131,6 @@ dist
 
 *.pem
 *.json
+
+*.Zip
+문서/
