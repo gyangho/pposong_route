@@ -37,7 +37,24 @@ async function markingWeather(seq, WalkData, WalkWeatherData) {
         });
 
         marker.setMap(map);//지도에 표시
-        // markers.push(marker);//배열에 새로운 마커 추가
+
+        //2023.12.10 채수아
+        //마커를 클릭하면 화면 맨 앞으로 내오기 추가
+        kakao.maps.event.addListener(marker, 'click', function (marker, markerPosition, weatherData) {
+            return function () {
+                // 클릭된 마커를 맨 앞으로 가져오기
+                marker.setZIndex(9999);
+
+                // 인포윈도우 추가
+                var infowindow = new kakao.maps.InfoWindow({
+                    content: getWeatherContent(weatherData),
+                    position: markerPosition
+                });
+
+                infowindow.open(map, marker);
+            };
+        }(marker, markerPosition, weatherData));
+        //여기까지 마커 클릭 이벤트
 
         // 인포윈도우 추가
         var infowindow = new kakao.maps.InfoWindow({
