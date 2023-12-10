@@ -10,8 +10,7 @@ function getWeatherContent(weatherData) {
         </div>`;
 }
 
-async function markingWeather(seq) {
-
+async function markingWeather(seq, WalkData, WalkWeatherData) {
     var PathCount = WalkData[seq].length;
 
     for (var i = 0; i < PathCount; i++) {

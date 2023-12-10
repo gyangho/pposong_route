@@ -199,10 +199,8 @@ app.get("/main/POI/result/pposong", async (req, res) => {
 //2023.12.10 이경호
 //전송데이터-수신데이터 오류 해결
 app.post("/main/POI/result/pposong/cal", async (req, res) => {
-    let response = req.body.WalkData;
-    console.log(response);
-    let receivedData = JSON.parse(response);
-    var resultData = [];
+    let receivedData = req.body.WalkData;
+    let resultData = [];
     try {
         for (const walkData of receivedData) {
             const sectionData = [];

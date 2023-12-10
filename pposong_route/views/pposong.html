@@ -64,10 +64,10 @@
             <div id="dynamicContent"></div>
         </div>
         <div class="btns" style="z-index:999;">
-            <button id="TimeButton1" style="position: absolute; z-index:100; left: 5%; top: 18%;"></button>
-            <button id="TimeButton2" style="position: absolute; z-index:100; left: 15%; top: 18%;"></button>
-            <button id="TimeButton3" style="position: absolute; z-index:100; left: 25%; top: 18%;"></button>
-            <button id="TimeButton4" style="position: absolute; z-index:100; left: 35%; top: 18%;"></button>
+            <button id="TimeButton1" style="position: absolute; z-index:100; left: 5%; bottom: 40%;"></button>
+            <button id="TimeButton2" style="position: absolute; z-index:100; left: 30%; bottom: 40%;"></button>
+            <button id="TimeButton3" style="position: absolute; z-index:100; left: 55%; bottom: 40%;"></button>
+            <button id="TimeButton4" style="position: absolute; z-index:100; left: 80%; bottom: 40%;"></button>
         </div>
     </main>
 </body>
@@ -103,45 +103,72 @@
     let map = new kakao.maps.Map(container, options);
 </script>
 
-<script src='https://unpkg.com/axios/dist/axios.min.js'></script>
 <script type="module">
     import { get_RouteLine, get_WalkData } from "/js/pposong.js";
 
-    get_RouteLine(Route);
 
     // 2023.12.08 김건학
     // 버튼을 누르지 않아도 사용할 수 있게 window 객체에 WalkData, WalkWeatherData 저장
-    window.WalkData = JSON.stringify(get_WalkData(Route, Route_Time));
+    //window.WalkData = JSON.stringify(get_WalkData(Route, Route_Time));
+
     // 2023.12.09 김건학
     // WalkWeatherData 동기적으로 받게 수정
+    get_RouteLine(Route);
+    const WalkData = get_WalkData(Route, Route_Time);
+    const WalkWeatherData = [];
     try {
-        const response = await axios.post("/main/POI/result/pposong/cal", { WalkData: window.WalkData, });
-        console.log(response.data);
-        window.WalkWeatherData = response.data;
-
-        document.getElementById("TimeButton1").innerText = window.Route_Time[0] + ' 출발\n총 강수량 :' + WalkWeatherData[0].sum_RN1;
-        document.getElementById("TimeButton2").innerText = window.Route_Time[1] + ' 출발\n총 강수량 :' + WalkWeatherData[1].sum_RN1;
-        document.getElementById("TimeButton3").innerText = window.Route_Time[2] + ' 출발\n총 강수량 :' + WalkWeatherData[2].sum_RN1;
-        document.getElementById("TimeButton4").innerText = window.Route_Time[3] + ' 출발\n총 강수량 :' + WalkWeatherData[3].sum_RN1;
+        let sectionData = [];
+        var sum_RN1 = 0;
+        for (let walkData of WalkData) {
+            for (let section of walkData) {
+                for (let temp of receivedData) {
+                    for (let weather of temp) {
+                        if (Number(weather.X) == section.X && Number(weather.Y) == section.Y
+                            && weather.TIME == section.basetime) {
+                            var section_RN1 = (Number(weather.RN1) * section.sectiontime) / 60 .toFixed();
+                            sum_RN1 += section_RN1;
+                            sectionData.push({
+                                DATE: weather.DATE,
+                                TIME: weather.TIME,
+                                X: weather.X,
+                                Y: weather.Y,
+                                RN1: weather.RN1,
+                                T1H: weather.T1H,
+                                REH: weather.REH,
+                                WSD: weather.WSD,
+                                section_RN1: section_RN1.toString(),
+                            })
+                        }
+                    }
+                }
+            }
+            var resultData = {
+                sum_RN1: sum_RN1.toString(),
+                walkData: sectionData,
+            };
+            WalkWeatherData.push(resultData);
+        }
+        document.getElementById("TimeButton1").innerText = window.Route_Time[0] + '\n강수량 :' + WalkWeatherData[0].sum_RN1;
+        document.getElementById("TimeButton2").innerText = window.Route_Time[1] + '\n강수량 :' + WalkWeatherData[1].sum_RN1;
+        document.getElementById("TimeButton3").innerText = window.Route_Time[2] + '\n강수량 :' + WalkWeatherData[2].sum_RN1;
+        document.getElementById("TimeButton4").innerText = window.Route_Time[3] + '\n강수량 :' + WalkWeatherData[3].sum_RN1;
     } catch (error) {
-        console.error('Error sending data to server:', error);
+        console.error('Error :', error);
     }
-
     document.getElementById("TimeButton1").addEventListener("click", function () {// 버튼 1 누르면 
-        markingWeather(0);//버튼 누르면 날씨 정보 띄우는 함수
-        let map = new kakao.maps.Map(container, options);
+        markingWeather(0, WalkData, WalkWeatherData);//버튼 누르면 날씨 정보 띄우는 함수
     });
 
     document.getElementById("TimeButton2").addEventListener("click", function () {// 버튼 2 누르면
-        markingWeather(1);
+        markingWeather(1, WalkData, WalkWeatherData);
     });
 
     document.getElementById("TimeButton3").addEventListener("click", function () {// 버튼 3 누르면
-        markingWeather(2);
+        markingWeather(2, WalkData, WalkWeatherData);
     });
 
     document.getElementById("TimeButton4").addEventListener("click", function () {// 버튼 4 누르면
-        markingWeather(3);
+        markingWeather(3, WalkData, WalkWeatherData);
     });
 
 
