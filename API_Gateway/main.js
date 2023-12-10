@@ -93,10 +93,6 @@ app.get('/api/Odsay', async (req, res) => {
   res.send(Routes);
 })
 
-app.get('/api/authCheck', (req, res) => {
-
-})
-
 
 httpsServer.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

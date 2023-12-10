@@ -1,3 +1,4 @@
+<!-- 추가한 코드 -->
 <!-- 2023.11.30 김건학 
 	뽀송타임 기본 html
 	대중교통 루트 표현
@@ -9,14 +10,14 @@
     window 객체에 WalkData, WalkWeatherData 저장
     수아님 코드 합침-->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <link rel="stylesheet" href="/css/styles.css" />
     <link rel="icon" href="/image/21.png" type="image/x-icon">
-    <meta charset="utf-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>뽀송길</title>
+    <title>Result</title>
 </head>
 
 <body>
@@ -74,20 +75,21 @@
 </html>
 
 <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
+
 <script src="/js/back.js"></script>
+
 <script type="module">
-    // 현재 시각 기준 30분 간격 4개의 시각 계산
     import { getTimeStamp } from "/js/cal_time.js";
     window.Route_Time = getTimeStamp(3);
 </script>
+
 <script type="text/javascript" src="https://dydtkwk.ddns.net/api/map"></script>
 <script>
     // localStorage에서 데이터를 가져옴
-    // 2023.12.05 김건학
-    // Route_Line --> Route 수정
+    // 해당 코드에서만 Route_Line은 Route(경로 정보)를 뜻한다.
 
-    //2023.12.10 이경호
-    // localStorage --> sessionStorage
+    // 2023.12.10 이경호
+    // local --> session
     const Route = JSON.parse(sessionStorage.getItem('Route')) || {};
     // 지도에 표현할 날씨 데이터들 render
     const receivedData = JSON.parse(`{{grid_data}}`);
@@ -100,49 +102,50 @@
     };
     let map = new kakao.maps.Map(container, options);
 </script>
+
 <script src='https://unpkg.com/axios/dist/axios.min.js'></script>
 <script type="module">
     import { get_RouteLine, get_WalkData } from "/js/pposong.js";
 
     get_RouteLine(Route);
 
-    // 2023.12.07 김건학
-    // 버튼에 시각 표현
-    document.getElementById("TimeButton1").innerText = window.Route_Time[0];
-    document.getElementById("TimeButton2").innerText = window.Route_Time[1];
-    document.getElementById("TimeButton3").innerText = window.Route_Time[2];
-    document.getElementById("TimeButton4").innerText = window.Route_Time[3];
-
-
     // 2023.12.08 김건학
     // 버튼을 누르지 않아도 사용할 수 있게 window 객체에 WalkData, WalkWeatherData 저장
-    window.WalkData = get_WalkData(Route, Route_Time);
+    window.WalkData = JSON.stringify(get_WalkData(Route, Route_Time));
+    // 2023.12.09 김건학
+    // WalkWeatherData 동기적으로 받게 수정
+    try {
+        const response = await axios.post("/main/POI/result/pposong/cal", { WalkData: window.WalkData, });
+        console.log(response.data);
+        window.WalkWeatherData = response.data;
 
-    // 서버로 걷는 구간들 데이터 전송
-    axios.post("/main/POI/result/pposong/cal", { WalkData: window.WalkData })
-        .then(response => {
-            window.WalkWeatherData = response.data.response;
-        })
-        .catch(error => {
-            console.error('Error sending data to server:', error);
-        });
+        document.getElementById("TimeButton1").innerText = window.Route_Time[0] + ' 출발\n총 강수량 :' + WalkWeatherData[0].sum_RN1;
+        document.getElementById("TimeButton2").innerText = window.Route_Time[1] + ' 출발\n총 강수량 :' + WalkWeatherData[1].sum_RN1;
+        document.getElementById("TimeButton3").innerText = window.Route_Time[2] + ' 출발\n총 강수량 :' + WalkWeatherData[2].sum_RN1;
+        document.getElementById("TimeButton4").innerText = window.Route_Time[3] + ' 출발\n총 강수량 :' + WalkWeatherData[3].sum_RN1;
+    } catch (error) {
+        console.error('Error sending data to server:', error);
+    }
 
-    document.getElementById("TimeButton1").addEventListener("click", function () {
-        // 버튼 1 누르면 
+    document.getElementById("TimeButton1").addEventListener("click", function () {// 버튼 1 누르면 
+        markingWeather(0);//버튼 누르면 날씨 정보 띄우는 함수
+        let map = new kakao.maps.Map(container, options);
     });
 
-    document.getElementById("TimeButton2").addEventListener("click", function () {
-        // 버튼 2 누르면
+    document.getElementById("TimeButton2").addEventListener("click", function () {// 버튼 2 누르면
+        markingWeather(1);
     });
 
-    document.getElementById("TimeButton3").addEventListener("click", function () {
-        // 버튼 3 누르면
+    document.getElementById("TimeButton3").addEventListener("click", function () {// 버튼 3 누르면
+        markingWeather(2);
     });
 
-    document.getElementById("TimeButton4").addEventListener("click", function () {
-        // 버튼 4 누르면
+    document.getElementById("TimeButton4").addEventListener("click", function () {// 버튼 4 누르면
+        markingWeather(3);
     });
+
 
 </script>
 <script type="module" src="/js/map.js" async></script>
 <script src="/js/kakao.js"></script>
+<script src="/js/marking.js"></script>

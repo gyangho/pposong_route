@@ -64,42 +64,25 @@
             Paths.forEach(function (Path, idx) {
                 Path.addEventListener('click', function () {
                     var Click_Path = Routes[idx];
+                    // 페이지 변경 전에 데이터를 localStorage에 저장
+                    // 2023.12.05 김건학
+                    // Route_Line --> Route 수정
 
                     // 2023.12.08 김건학
-                    // url에서 start, end 데이터 받아오고
+                    // start, end도 localStorage에 저장
 
-                    //2023.12.10 이경호
-                    //script scope에 start, end 추가.
+                    //2023.12.09 이경호
+                    //localStorage --> sessionStorage 수정
+                    sessionStorage.setItem('Route', JSON.stringify(Click_Path));
+                    sessionStorage.setItem('start', start);
+                    sessionStorage.setItem('end', end);
 
-                    axios.post('https://dydtkwk.ddns.net/main/POI/result/pposong/cal', {
-                        params: {
-                            Route: Click_Path,
-                            start: start,
-                            end: end
-                        }
-                    }).then(function (response) {
-                        // 페이지 변경 전에 데이터를 localStorage에 저장
-                        // 2023.12.05 김건학
-                        // Route_Line --> Route 수정
-
-                        // 2023.12.08 김건학
-                        // start, end도 localStorage에 저장
-
-                        //2023.12.09 이경호
-                        //localStorage --> sessionStorage 수정
-                        sessionStorage.setItem('Route', JSON.stringify(Click_Path));
-                        sessionStorage.setItem('start', start);
-                        sessionStorage.setItem('end', end);
-
-                        // 페이지 변경
-                        var newPageURL = 'https://dydtkwk.ddns.net/main/POI/result/pposong';
-                        window.location.href = newPageURL;
-                    }).catch(function (error) {
-                        console.error('Error:', error);
-                    });
+                    // 페이지 변경
+                    var newPageURL = 'https://dydtkwk.ddns.net/main/POI/result/pposong';
+                    window.location.href = newPageURL;
                 });
-
             });
+
         });
     </script>
 

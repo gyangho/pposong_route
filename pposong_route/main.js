@@ -195,11 +195,16 @@ app.get("/main/POI/result/pposong", async (req, res) => {
 // 2023.12.08 김건학
 // pposong.html에서 보낸 도보 데이터 받기, db검색 후 파싱, pposong.html로 데이터 전송
 // 한 time의 데이터만 받아오는 기존 방식을 4 time 데이터 모두 받게 수정
+
+//2023.12.10 이경호
+//전송데이터-수신데이터 오류 해결
 app.post("/main/POI/result/pposong/cal", async (req, res) => {
-    const receivedData = req.body;
+    let response = req.body.WalkData;
+    console.log(response);
+    let receivedData = JSON.parse(response);
     var resultData = [];
     try {
-        for (const walkData of receivedData.WalkData) {
+        for (const walkData of receivedData) {
             const sectionData = [];
             var sum_RN1 = 0;
             for (const section of walkData) {
@@ -207,7 +212,7 @@ app.post("/main/POI/result/pposong/cal", async (req, res) => {
                     "SELECT * FROM FORECAST WHERE TIME = ? AND X = ? AND Y =  ?",
                     [section.basetime, section.X, section.Y]
                 );
-                var section_RN1 = (weatherData[0].RN1 * section.sectiontime) / 60;
+                var section_RN1 = (Number(weatherData[0].RN1) * section.sectiontime) / 60;
                 sum_RN1 += section_RN1;
                 sectionData.push({
                     DATE: weatherData[0].DATE,
@@ -218,19 +223,20 @@ app.post("/main/POI/result/pposong/cal", async (req, res) => {
                     WSD: weatherData[0].WSD,
                     X: weatherData[0].X,
                     Y: weatherData[0].Y,
-                    section_RN1: section_RN1,
+                    section_RN1: section_RN1.toString(),
                 });
             }
             var WalkWeatherData = {
-                sum_RN1: sum_RN1,
+                sum_RN1: sum_RN1.toString(),
                 walkData: sectionData,
             };
             resultData.push(WalkWeatherData);
         }
     } catch (error) {
-        console.error(error);
+        console.error("pposong/cal 에러: " + error);
     }
-    res.json({ response: resultData });
+    let strresult = JSON.stringify(resultData);
+    res.send(strresult);
 });
 
 httpsServer.listen(port, () => {
