@@ -103,6 +103,7 @@ httpsServer.listen(port, () => {
     const HH = input_time.toString().substring(0, 2);
     const MM = input_time.toString().substring(2);
     const time = input_time.toString().substring(0, 2) + "00";
+    console.log("Time: " + time);
     console.log("________________________________");
     console.log(`Forecast Updating Started[${HH}:${MM}]`);
     console.time(`Forecast Update[${HH}:${MM}] 소요시간`);
@@ -132,7 +133,7 @@ httpsServer.listen(port, () => {
         for (let j = 0; j < 5; j++) {
           try {
             db.query(
-              "INSERT INTO foreCast (DATE, TIME, X, Y, RN1, T1H, REH, WSD, UPTIME) VALUES(?,?,?,?,?,?,?,?,?)",
+              "INSERT INTO forecast (DATE, TIME, X, Y, RN1, T1H, REH, WSD, UPTIME) VALUES(?,?,?,?,?,?,?,?,?)",
               [
                 ultra_forecast_datas[i][j].Date,
                 ultra_forecast_datas[i][j].Time,
@@ -153,13 +154,15 @@ httpsServer.listen(port, () => {
           }
         }
       }
+      //현재 기상정보가 넘어오지 않기 때문에 UPTIME만 수정해준다.
       db.query(
-        "DELETE FROM FORECAST WHERE UPTIME != ?",
-        [time], // 현재 시각 제외 모두 삭제
-        await function (error, results, fields) {
+        "UPDATE forecast SET UPTIME = ? WHERE TIME = ?",
+        [
+          input_time, time,
+        ], await function (error, results, fields) {
           if (error) throw error;
         }
-      );
+      )
     } else {
       for (let i = 0; i < 30; i++) {
         for (let j = 0; j < 6; j++) {
