@@ -17,7 +17,7 @@
     <link rel="icon" href="/image/21.png" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Result</title>
+    <title>뽀송길</title>
 </head>
 
 <body>
@@ -29,7 +29,7 @@
         </div>
 
         <div class="status-bar__column">
-            <span>ver 0.6.1</span>
+            <span>ver 0.6.2</span>
 
         </div>
     </div>
@@ -117,37 +117,41 @@
     const WalkData = get_WalkData(Route, Route_Time);
     const WalkWeatherData = [];
     try {
-        let sectionData = [];
-        var sum_RN1 = 0;
         for (let walkData of WalkData) {
+            let sectionData = [];
+            var sum_RN1 = 0;
             for (let section of walkData) {
                 for (let temp of receivedData) {
-                    for (let weather of temp) {
-                        if (Number(weather.X) == section.X && Number(weather.Y) == section.Y
-                            && weather.TIME == section.basetime) {
-                            var section_RN1 = (Number(weather.RN1) * section.sectiontime) / 60 .toFixed();
-                            sum_RN1 += section_RN1;
-                            sectionData.push({
-                                DATE: weather.DATE,
-                                TIME: weather.TIME,
-                                X: weather.X,
-                                Y: weather.Y,
-                                RN1: weather.RN1,
-                                T1H: weather.T1H,
-                                REH: weather.REH,
-                                WSD: weather.WSD,
-                                section_RN1: section_RN1.toString(),
-                            })
+                    if (Number(temp[0].X) == section.X && Number(temp[0].Y) == section.Y) {
+                        for (let weather of temp) {
+                            if (weather.TIME == section.basetime) {
+                                var section_RN1 = (Number(weather.RN1) * section.sectiontime) / 60 .toFixed();
+                                sum_RN1 += section_RN1;
+                                sectionData.push({
+                                    DATE: weather.DATE,
+                                    TIME: weather.TIME,
+                                    X: weather.X,
+                                    Y: weather.Y,
+                                    RN1: weather.RN1,
+                                    T1H: weather.T1H,
+                                    REH: weather.REH,
+                                    WSD: weather.WSD,
+                                    section_RN1: section_RN1.toString(),
+                                })
+                                break;
+                            }
                         }
+                        break;
                     }
                 }
+                var resultData = {
+                    sum_RN1: sum_RN1.toString(),
+                    walkData: sectionData,
+                };
             }
-            var resultData = {
-                sum_RN1: sum_RN1.toString(),
-                walkData: sectionData,
-            };
             WalkWeatherData.push(resultData);
         }
+        console.log(WalkWeatherData);
         document.getElementById("TimeButton1").innerText = window.Route_Time[0] + '\n강수량 :' + WalkWeatherData[0].sum_RN1;
         document.getElementById("TimeButton2").innerText = window.Route_Time[1] + '\n강수량 :' + WalkWeatherData[1].sum_RN1;
         document.getElementById("TimeButton3").innerText = window.Route_Time[2] + '\n강수량 :' + WalkWeatherData[2].sum_RN1;

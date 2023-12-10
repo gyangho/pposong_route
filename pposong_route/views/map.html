@@ -17,6 +17,15 @@
 </head>
 
 <body>
+	<div class="status-bar">
+		<div class="status-bar__column">
+			<span>PPOSONG</span>
+			<i class="fa-solid fa-cloud" style="color: #9fd8f6;"></i>
+		</div>
+		<div class="status-bar__column">
+			<span>ver 0.6.2</span>
+		</div>
+	</div>
 	<header class="alt-header">
 		<div class="alt-header__column">
 			<i class="fa-solid fa-angle-left fa-xl"></i>
@@ -84,11 +93,26 @@
 					<i class="fa-solid fa-location-crosshairs"></i>
 				</div>
 			</div>
+			<!--우측 상단 날씨 버튼-->
+			<div class="buttons" style="z-index: 2">
+				<div class="weather-btn">
+					<i class="fa-solid fa-cloud"></i>
+				</div>
+			</div>
+
 			<!--하단 info component-->
-			<div class="bottom initial" style="z-index: 2">
+			<div class="bottom-bar" style="z-index: 2" hidden>
+				<div class="content"></div>
 			</div>
 		</div>
 	</main>
+
+	<div id="intro-screen">
+		<div class="intro-header">
+			<h1 class="intro-header__title">뽀송길</h1>
+			<p class="intro-header__subtitle"> 뽀송하게 이동할 시간 <i class="fa-solid fa-cloud" style="color: white;"></i></p>
+		</div>
+	</div>
 
 	<!--js-->
 	<script>

@@ -40,7 +40,8 @@
 }
 
 #map .bookmark-btn,
-.location-btn {
+.location-btn,
+.weather-btn {
     cursor: pointer;
     box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.2);
     background-color: var(--deepblue);
@@ -50,7 +51,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-
 }
 
 #map .bookmark-btn i {
@@ -63,41 +63,110 @@
     padding: 10px;
 }
 
-#map .fa-bookmark.active {
+#map .weather-btn i {
+    padding: 11px 9.5px;
+    font-size: 13px;
+    color: #9fd8f6;
+}
+
+#map .weather-btn i.active {
+    color: gray;
+}
+
+#map .bookmark-btn i.active {
     font-weight: 800;
     color: var(--yellow);
 }
 
-#map .fa-location-crosshairs.active {
+#map .location-btn i.active {
     color: tomato;
 }
 
-#map .bottom.initial {
-    display: none;
-}
-
-#map .bottom {
-    position: fixed;
+/* experimental */
+.bottom-bar {
     bottom: 0;
     width: 100%;
-    height: 30%;
-    max-height: 30%;
-    padding: 40px 0px 20px 0px;
+    height: 22%;
+    max-height: 22%;
+    padding: 30px 10px 10px 10px;
     background-color: white;
-    border-radius: 25px 25px 0px 0px;
-    animation: slide-down 0.6s forwards;
-    /* 세로 스크롤바만표시 */
-    overflow-y: scroll;
-    /* 혹은 auto */
+    animation: slide-up 0.4s ease-in-out;
+    box-shadow: 0px 0px 4px 3px rgba(0, 0, 0, 0.1);
+    position: fixed;
 }
 
-#map .bottom.active {
-    animation: slide-up 0.6s forwards;
+.hide-bottom-bar {
+    animation: slide-down 0.3s forwards;
 }
 
-#map .bottom .bookmark-screen {
-    animation: none;
+.content {
+    padding-right: 20px;
 }
+
+.content .home-component {
+    padding-right: 60px;
+
+}
+
+.home-column.fixed {
+    max-width: 30%;
+    height: 100px;
+    padding: -20px;
+    font-family: 'Pangolin', 'Open Sans', sans-serif, cursive;
+}
+
+.home-weather.fixed .weather-icon {
+    width: 50px;
+    height: 50px;
+
+}
+
+.etc-info {
+    display: flex;
+    flex-direction: column;
+    font-size: 16px;
+    margin-bottom: 10px;
+
+}
+
+.home-column.fixed .text {
+    font-size: 17px;
+}
+
+.etc-info span {
+    margin-bottom: 5px;
+}
+
+/* 
+.weather {
+    display: flex;
+    justify-content: space-between;
+    background-color:aliceblue;
+    ;
+}
+
+.weather-info {
+    width:25%;
+    max-width: 25%;
+    height:100px;
+    max-height: 100px;
+    background-color:#9fd8f6;
+    box-shadow: 0px 4px 4px -4px var(--grey);
+    display: flex;
+    border-radius: 20px;
+    flex-direction: column;
+    padding:10px;
+    text-align: left;
+}
+
+.weather-info > * {
+    background-color: tomato;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    margin-bottom:10px;
+    font-size: 16px;
+} */
 
 @keyframes slide-up {
     from {

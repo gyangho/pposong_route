@@ -154,7 +154,7 @@ httpsServer.listen(port, () => {
         }
       }
       db.query(
-        "DELETE FROM FORECAST WHERE TIME != ?",
+        "DELETE FROM FORECAST WHERE UPTIME != ?",
         [time], // 현재 시각 제외 모두 삭제
         await function (error, results, fields) {
           if (error) throw error;
