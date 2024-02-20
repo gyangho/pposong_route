@@ -11,28 +11,32 @@ router.get('/login', function (request, response) {
 });
 
 // 로그인 프로세스
-router.post('/login_process', function (request, response) {
-    var username = request.body.username;
-    var password = request.body.pwd;
-    if (username && password) {             // id와 pw가 입력되었는지 확인
-
-        db.query('SELECT * FROM usertable WHERE username = ? AND password = ?', [username, password], function (error, results, fields) {
-            if (error) throw error;
-            if (results.length > 0) {       // db에서의 반환값이 있으면 로그인 성공
-                request.session.is_logined = true;      // 세션 정보 갱신
-                request.session.nickname = username;
-                request.session.save(function () {
-                    response.redirect(`/`);
-                });
-            } else {
-                response.send(`<script type="text/javascript">alert("로그인 정보가 일치하지 않습니다."); 
+router.post('/login_process', async function (request, response) {
+    try {
+        var username = request.body.username;
+        var password = request.body.pwd;
+        if (username && password) {             // id와 pw가 입력되었는지 확인
+            db.query('SELECT * FROM usertable WHERE username = ? AND password = ?', [username, password], function (error, results, fields) {
+                if (error) throw error;
+                if (results.length > 0) {       // db에서의 반환값이 있으면 로그인 성공
+                    request.session.is_logined = true;      // 세션 정보 갱신
+                    request.session.nickname = username;
+                    request.session.save(function () {
+                        response.redirect('/');
+                        console.log(username + ": Logged in\n");
+                    });
+                } else {
+                    response.send(`<script type="text/javascript">alert("로그인 정보가 일치하지 않습니다."); 
                 document.location.href="/auth/login";</script>`);
-            }
-        });
+                }
+            });
 
-    } else {
-        response.send(`<script type="text/javascript">alert("아이디와 비밀번호를 입력하세요!"); 
+        } else {
+            response.send(`<script type="text/javascript">alert("아이디와 비밀번호를 입력하세요!"); 
         document.location.href="/auth/login";</script>`);
+        }
+    } catch (error) {
+        console.error(error);
     }
 });
 
@@ -56,13 +60,13 @@ router.post('/register_process', function (request, response) {
     var password2 = request.body.pwd2;
 
     if (username && password && password2) {
-
         db.query('SELECT * FROM usertable WHERE username = ?', [username], function (error, results, fields) { // DB에 같은 이름의 회원아이디가 있는지 확인
             if (error) throw error;
             if (results.length <= 0 && password == password2) {     // DB에 같은 이름의 회원아이디가 없고, 비밀번호가 올바르게 입력된 경우 
                 db.query('INSERT INTO usertable (username, password) VALUES(?,?)', [username, password], function (error, data) {
                     if (error) throw error2;
                     response.sendFile(path.join(__dirname, '/views/welcome.html'));
+                    console.log(username + ": Registerd\n");
                 });
             } else if (password != password2) {                     // 비밀번호가 올바르게 입력되지 않은 경우
                 response.send(`<script type="text/javascript">alert("입력된 비밀번호가 서로 다릅니다."); 

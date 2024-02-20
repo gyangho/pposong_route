@@ -10,34 +10,33 @@
 </head>
 
 <body>
-    <div class="status-bar">
-        <div class="status-bar__column">
-            <span>PPOSONG</span>
-            <i class="fa-solid fa-cloud" style="color: #9fd8f6;"></i>
-        </div>
+    <div id="wrap">
+        <main class="main-screen">
+            <header class="login-header">
+                <h1 class="login-header__title">뽀송길</h1>
+                <p class="login-header__subtitle">뽀송길과 함께하는<br>뽀송뽀송한 하루 <i class="fa-solid fa-cloud"
+                        style="color: #9fd8f6;"></i></p>
+            </header>
 
-        <div class="status-bar__column">
-            <span>ver 0.6.2</span>
-        </div>
+            <!-- 서버 연동 시 get=>post로 수정 -->
+            <form class="login-form" action="/auth/login_process" method="post">
+                <input name="username" required type="text" placeholder="ID" />
+                <input name="pwd" required type="password" placeholder="Password" />
+                <input type="submit" value="로그인" class="login-btn" />
+                <a href="/auth/inquiry">아이디 또는 비밀번호 찾기</a>
+                <a href="/auth/register">뽀송길이 처음이신가요?</a>
+            </form>
+        </main>
     </div>
 
-    <header class="login-header">
-        <h1 class="login-header__title">뽀송길</h1>
-        <p class="login-header__subtitle">
-            If you have a Account, log in with your email or phone number.</p>
-    </header>
-
-    <!-- 서버 연동 시 get=>post로 수정 -->
-    <form class="login-form" action="/auth/login_process" method="post">
-        <input name="username" required type="text" placeholder="Email or phone number" />
-        <input name="pwd" required type="password" placeholder="Password" />
-        <input type="submit" value="Log In" class="login-btn" />
-        <a href="/auth/inquiry">Find Account or Password</a>
-        <a href="/auth/register">뽀송길이 처음이신가요?</a>
-    </form>
-
+    <footer class="footer">
+        <div class="project-info">
+            <h4 class="project-name">뽀송길</h4>
+            <p>2023 - SSU Capstone Design Project</p>
+        </div>
+    </footer>
     <script src="https://kit.fontawesome.com/660f4d6ed1.js" crossorigin="anonymous"></script>
-    <script src="/js/join.js"></script>
+    <script src="js/join.js"></script>
 </body>
 
 </html>

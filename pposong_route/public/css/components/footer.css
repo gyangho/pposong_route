@@ -1,20 +1,23 @@
-html, body {
+html,
+body {
     height: 100%;
 }
 
 #wrap {
     min-height: 100%;
-    position:relative;
+    position: relative;
     padding-bottom: 30px;
 }
 
 .footer {
+    width: 100%;
+    background-color: white;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     font-size: 12px;
-    font-family: 'Manrope','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    font-family: 'Manrope', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     bottom: 0;
     position: relative;
     transform: translateY(-100%);

@@ -1,7 +1,7 @@
 //2023.12.09 채수아 생성
 function getWeatherContent(weatherData) {
     return `
-        <div style="padding:5px; background-color: #9fd8f6; border-radius: 12px; width:200px;">
+        <div style="padding:5px; background-color: #9fd8f6; border-radius: 12px; width:210px;">
             <p>습도 <img src="/image/22.png" width="15px" height="18px">: ${weatherData.REH}</p>
             <p>기온 <i class="fa-solid fa-temperature-three-quarters"></i> : ${weatherData.T1H}</p>
             <p>바람 <i class="fa-solid fa-wind"></i> : ${weatherData.WSD}</p>
@@ -54,8 +54,8 @@ async function markingWeather(seq, WalkData, WalkWeatherData) {
                 infowindow.open(map, marker);
             };
         }(marker, markerPosition, weatherData));
-        //여기까지 마커 클릭 이벤트
 
+        //여기까지 마커 클릭 이벤트
         // 인포윈도우 추가
         var infowindow = new kakao.maps.InfoWindow({
             content: getWeatherContent(weatherData),

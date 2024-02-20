@@ -67,7 +67,7 @@
 .route-list__bar::before {
     content: "🔻";
     position: absolute;
-    left: -11px;
+    left: -13px;
     top: -2px;
     /* 내용이 선 왼쪽에 위치하도록 조절 (음수 값은 선 왼쪽으로 이동) */
 }

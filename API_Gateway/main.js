@@ -70,7 +70,6 @@ app.get('/api/POI', async (req, res) => {
     documents: apiResponse.data.documents,
     status: apiResponse.status,
   };
-  console.log(input.query);
   res.send(response);
 })
 
@@ -96,7 +95,7 @@ app.get('/api/Odsay', async (req, res) => {
 
 httpsServer.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
-  schedule.scheduleJob("50 0,10,20,30,40,50 * * * *", async function () {
+  schedule.scheduleJob("40 0,10,20,37,40,50 * * * *", async function () {
     const input_date = td.getTimeStamp(1);
     const input_time = td.getTimeStamp(2);
     const promises = [];

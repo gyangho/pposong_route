@@ -131,7 +131,7 @@ app.get('/main/mypage', (req, res) => {
 //북마크
 app.get('/main/mypage/bookmark', async (req, res) => {
     const filePath = path.join(__dirname, '/views/bookmark.html');
-    let Routes = {};
+    /*let Routes = {};
     try {
         Routes = await transport.getPublicTransport(126.9961, 37.5035, 126.96, 37.4946, 202307291200) //신반포역->정보관
         if (Routes.length < 1) {
@@ -145,16 +145,13 @@ app.get('/main/mypage/bookmark', async (req, res) => {
         console.error(error);
     };
     let sRoutes = JSON.stringify(Routes[0]);
-    let mRoutes = sRoutes.replace(/"/g, '@@');
+    let mRoutes = sRoutes.replace(/"/g, '@@');*/
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
             res.status(500).send('Error reading file');
         }
         else {
-            // 외부 HTML 파일 내부의 {T#}을 대체하여 전송
-            const modifiedData = data
-                .replace(/{{R}}/g, mRoutes);
-            res.send(modifiedData);
+            res.send(data);
         }
     });
 })
@@ -177,6 +174,7 @@ app.post('/main/POI/result', async (req, res) => {
     try {
         const html = await createDynamicHTML(resource);
         res.send(html);
+        console.log(resource);
     } catch (error) {
         console.error("Error handling request:", error);
         res.status(500).send("Internal Server Error");
